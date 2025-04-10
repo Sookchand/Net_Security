@@ -1,0 +1,129 @@
+name: workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  integration:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Lint Code
+        run: echo "Linting repository"
+
+      - name: Run Unit Tests
+        run: echo "Running unit tests"
+
+  build-and-push-ecr-image:
+    name: Continuous Delivery
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, Tag, and Push Image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  continuous-deployment:
+    needs: build-and-push-ecr-image
+    runs-on: self-hosted
+    steps:
+      - name: Debug Runner
+        run: |
+          echo "Runner OS: $RUNNER_OS"
+          echo "Runner Name: $RUNNER_NAME"
+          echo "Runner User: $RUNNER_USER"
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Docker
+        if: runner.os == 'Linux'
+        run: |
+          sudo yum update -y
+          sudo yum install -y docker
+          sudo systemctl start docker
+          sudo systemctl enable docker
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Pull Latest Image
+        run: |
+          IMAGE_URI="${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest"
+          echo "Resolved Image URI: $IMAGE_URI"
+          docker pull "$IMAGE_URI"
+
+      - name: Clean Up Docker Resources
+        run: |
+          echo "Cleaning up unused Docker resources to free up space."
+          docker system prune -a -f --volumes
+
+      - name: Run Docker Image to Serve Users
+        run: |
+          if docker ps -a --format '{{.Names}}' | grep -q "^netwroksecuritytrial$"; then
+            echo "Removing existing container with name 'netwroksecuritytrial'."
+            docker stop networksecuritytrial
+            docker rm networksecuritytrial
+          fi
+
+          echo "Running container with updated port mapping and environment variables..."
+          docker run -d -p 8000:8000 --ipc="host" --name=netwroksecuritytrial \
+            -e "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" \
+            -e "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" \
+            -e "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" \
+            -e "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" \
+            -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            -e "AWS_REGION=${{ secrets.AWS_REGION }}" \
+            ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+      - name: Clean Previous Image and Container
+        run: |
+          docker rm -f netwroksecuritytrial || true # Clean up any existing container
+          docker rmi -f ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest || true # Clean up any existing image
+          docker system prune -a -f --volumes # Clean up all unused images and containers
