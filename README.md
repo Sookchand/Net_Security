@@ -7,10 +7,9 @@ AWS_SECRET_ACCESS_KEY=
 
 AWS_REGION = us-east-1
 
-AWS_ECR_LOGIN_URI = 443217924721.dkr.ecr.us-east-1.amazonaws.com/
-ECR_REPOSITORY_NAME = netwroksecuritytrial
+AWS_ECR_LOGIN_URI = 
+ECR_REPOSITORY_NAME =
 
-443217924721.dkr.ecr.us-east-1.amazonaws.com/netwroksecuritytrial
 
 check for runner = ls -ld actions-runner
 clear runner = rm -rf actions-runner
@@ -18,9 +17,9 @@ clear = ./config.sh remove --token AIGA35237WYC2N5ZYGWDW6LH6W2YE
 
 
 key pair:
-name = my_key
-type = RSA
-format = .pem
+name = 
+type = 
+format = 
 
 istance_url = 44.202.38.160
 

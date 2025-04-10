@@ -60,7 +60,7 @@ class NetworkDataExtract():
 if __name__ == '__main__':
     try:
         logging.info("Starting the data processing script.")
-        FILE_PATH = "Network_Data\\phisingData.csv"
+        FILE_PATH = "Network_Data\phisingData.csv"
         DATABASE = "SookchandAI"
         COLLECTION = "NetworkData"
         
