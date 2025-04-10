@@ -1,10 +1,10 @@
 from networksecurity.components.data_ingestion import DataIngestion
 from networksecurity.components.data_ingestion import DataIngestionArtifact
-# from networksecurity.components.data_validation import DataValidation
+from networksecurity.components.data_validation import DataValidation
 # from networksecurity.components.data_transformation import DataTransformation
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
-# from networksecurity.entity.config_entity import DataIngestionConfig,DataValidationConfig,DataTransformationConfig
+from networksecurity.entity.config_entity import DataIngestionConfig,DataValidationConfig
 from networksecurity.entity.config_entity import TrainingPipelineConfig
 from networksecurity.components.data_ingestion import DataIngestionConfig
 
@@ -24,13 +24,13 @@ if __name__=='__main__':
         print(dataingestionartifact)
         logging.info("Data Ingestion artifact created")
         
-        # data_validation_config=DataValidationConfig(trainingpipelineconfig)
-        # data_validation=DataValidation(dataingestionartifact,data_validation_config)
-        # logging.info("Initiate the data Validation")
-        # data_validation_artifact=data_validation.initiate_data_validation()
-        # logging.info("data Validation Completed")
-        # print(data_validation_artifact)
-        # logging.info("Data Validation artifact created")
+        data_validation_config=DataValidationConfig(trainingpipelineconfig)
+        data_validation=DataValidation(dataingestionartifact,data_validation_config)
+        logging.info("Initiate the data Validation")
+        data_validation_artifact=data_validation.initiate_data_validation()
+        logging.info("data Validation Completed")
+        print(data_validation_artifact)
+        logging.info("Data Validation artifact created")
         
         # data_transformation_config=DataTransformationConfig(trainingpipelineconfig)
         # logging.info("data Transformation started")
