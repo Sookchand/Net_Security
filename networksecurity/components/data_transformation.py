@@ -61,7 +61,7 @@ class DataTransformation:
             logging.error(f"Error reading data from {file_path}: {e}")
             raise NetworkSecurityException(e, sys)
         
-    def get_data_transformer_object(self) -> Pipeline:
+    def get_data_transformer_object(cls) -> Pipeline:
         """
         Initializes a data transformer object, including a KNN Imputer pipeline.
 
