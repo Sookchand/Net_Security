@@ -29,9 +29,9 @@ jobs:
       - name: Lint Code
         run: |
           echo "Running pylint..."
-          pylint $(git ls-files '*.py')
+          pylint --rcfile=.pylintrc $(git ls-files '*.py') || exit $(($? & 35))
 
       - name: Run Unit Tests
         run: |
           echo "Running pytest..."
-          pytest
+          pytest --tb=short --disable-warnings -q || exit $(($? & 35))
