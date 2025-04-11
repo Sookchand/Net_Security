@@ -23,6 +23,12 @@ from sklearn.ensemble import (
 )
 from mlflow.models.signature import infer_signature
 
+# Initialize DagsHub
+# dagshub.init(repo_owner='Sookchand', repo_name='Network_Security', mlflow=True)
+#
+dagshub.init(repo_owner='Sookchand', repo_name='Net_Security', mlflow=True) 
+
+
 # dagshub.init(repo_owner='Sookchand', repo_name='Network_Security', mlflow=True)
 
 # os.environ["MLFLOW_TRACKING_URI"]="https://dagshub.com/Sookchand/Network_Security.mlflow"
@@ -164,6 +170,9 @@ class ModelTrainer:
             # Save the best model to a specific directory - you can push this model into s3 biucket, etc from here
             logging.info("Saving the best model to final_model directory...")   
             save_object("final_model/model.pkl", best_model)  # Save the final model
+            logging.info("Final model saved successfully.")
+            # Save the model to a specific directory - you can push this model into s3 bucket, etc from here
+            save_object("final_model/model.pkl",best_model)
             logging.info("Final model saved successfully.")
                         
             # Model Trainer Artifact
