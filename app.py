@@ -9,11 +9,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 mongo_db_url = os.getenv("MONGODB_URL_KEY")
-print(mongo_db_url)
+# print(mongo_db_url)
 import pymongo
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 from networksecurity.pipeline.training_pipeline import TrainingPipeline
+from networksecurity.entity.config_entity import TrainingPipelineConfig
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Request
@@ -54,21 +55,40 @@ async def index():
 
 
 # Global variable to store progress messages
-progress_messages = []
+
 
 @app.get("/train")
 async def train_route():
     try:
-        global progress_messages
-        progress_messages.clear()  # Clear previous messages
-        progress_messages.append("Training initiated.")
-        train_pipeline = TrainingPipeline(progress_callback=progress_messages.append)
-        train_pipeline.run_pipeline()
-        progress_messages.append("Training completed successfully.")
-        return Response("Training is successful")
+        # Create training pipeline config
+        training_pipeline_config = TrainingPipelineConfig()
+        
+        # Initialize and run pipeline with config
+        pipeline = TrainingPipeline(training_pipeline_config=training_pipeline_config)
+        
+        logging.info("Starting pipeline execution from API endpoint")
+        model_trainer_artifact = pipeline.run_pipeline()
+        
+        return {"status": "Training completed successfully", "artifact": str(model_trainer_artifact)}
     except Exception as e:
-        progress_messages.append(f"Error during training: {e}")
-        raise NetworkSecurityException(e, sys)
+        logging.error(f"Error in training route: {str(e)}")
+        return {"error": str(e)}
+    
+# progress_messages = []
+
+# @app.get("/train")
+# async def train_route():
+#     try:
+#         global progress_messages
+#         progress_messages.clear()  # Clear previous messages
+#         progress_messages.append("Training initiated.")
+#         train_pipeline = TrainingPipeline(progress_callback=progress_messages.append)
+#         train_pipeline.run_pipeline()
+#         progress_messages.append("Training completed successfully.")
+#         return Response("Training is successful")
+#     except Exception as e:
+#         progress_messages.append(f"Error during training: {e}")
+#         raise NetworkSecurityException(e, sys)
 
 
 @app.post("/predict")

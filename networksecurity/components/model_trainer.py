@@ -11,7 +11,7 @@ from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.utils.main_utils.utils import save_object, load_object
 from networksecurity.utils.main_utils.utils import load_numpy_array_data, evaluate_models
 from networksecurity.utils.ml_utils.metric.classification_metric import get_classification_score
-from networksecurity.entity.artifact_entity import DataTransformationArtifact, ModelTrainArtifact
+from networksecurity.entity.artifact_entity import DataTransformationArtifact, ModelTrainerArtifact
 from networksecurity.entity.artifact_entity import ClassificationMetricArtifact 
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import r2_score
@@ -176,7 +176,7 @@ class ModelTrainer:
             logging.info("Final model saved successfully.")
                         
             # Model Trainer Artifact
-            model_trainer_artifact = ModelTrainArtifact(
+            model_trainer_artifact = ModelTrainerArtifact(
                 trained_model_file_path=self.model_trainer_config.trained_model_file_path,
                 trained_metric_artifact=classification_train_metric,  # Updated parameter
                 test_metric_artifact=classification_test_metric      # Updated parameter
@@ -188,7 +188,7 @@ class ModelTrainer:
             logging.error(f"Error occurred during model training: {e}")
             raise NetworkSecurityException(e, sys)
 
-    def initiate_model_trainer(self) -> ModelTrainArtifact:
+    def initiate_model_trainer(self) -> ModelTrainerArtifact:
         logging.info("Initiating model trainer...")
         try:
             train_file_path = self.data_transformation_artifact.transformed_train_file_path

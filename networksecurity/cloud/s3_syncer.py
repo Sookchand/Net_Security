@@ -1,44 +1,36 @@
 import os
-import boto3
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
-from networksecurity.logging.logger import logging
+import logging
+import subprocess
 
 class S3Sync:
-    def sync_folder_to_s3(self, folder: str, aws_bucket_url: str):
-        """
-        Sync a local folder to an S3 bucket.
-
-        Args:
-            folder (str): Local folder path.
-            aws_bucket_url (str): S3 bucket URL.
-
-        Raises:
-            Exception: If the sync fails.
-        """
+    def sync_folder_to_s3(self, folder, aws_bucket_url):
         try:
-            logging.info(f"Starting S3 sync for folder: {folder} to bucket: {aws_bucket_url}")
-            s3_client = boto3.client('s3')
-            bucket_name = aws_bucket_url.split('/')[2]
-            prefix = '/'.join(aws_bucket_url.split('/')[3:])
-
-            for root, dirs, files in os.walk(folder):
-                for file in files:
-                    local_path = os.path.join(root, file)
-                    s3_path = os.path.join(prefix, os.path.relpath(local_path, folder))
-                    logging.info(f"Uploading {local_path} to s3://{bucket_name}/{s3_path}")
-                    s3_client.upload_file(local_path, bucket_name, s3_path)
-
-            logging.info("S3 sync completed successfully.")
-        except NoCredentialsError:
-            logging.error("AWS credentials not found.")
-            raise
-        except PartialCredentialsError:
-            logging.error("Incomplete AWS credentials provided.")
-            raise
+            logging.info(f"Starting sync from local folder '{folder}' to S3 bucket '{aws_bucket_url}'")
+            
+            # Check if folder exists
+            if not os.path.exists(folder):
+                logging.error(f"Local folder does not exist: {folder}")
+                return False
+                
+            # List directory contents
+            contents = os.listdir(folder)
+            logging.info(f"Contents of folder to sync: {contents}")
+            
+            # Construct and execute AWS CLI command
+            command = f"aws s3 sync {folder} {aws_bucket_url}"
+            logging.info(f"Executing command: {command}")
+            
+            # Use subprocess instead of os.system for better error handling
+            process = subprocess.run(command, shell=True, capture_output=True, text=True)
+            
+            if process.returncode == 0:
+                logging.info(f"Successfully synced folder '{folder}' to '{aws_bucket_url}'")
+                logging.info(f"Output: {process.stdout}")
+                return True
+            else:
+                logging.error(f"Failed to sync folder. Error: {process.stderr}")
+                return False
+                
         except Exception as e:
-            logging.error(f"Error during S3 sync: {e}")
-            raise
-
-    def sync_folder_from_s3(self, folder, aws_bucket_url):
-        command = f"aws s3 sync  {aws_bucket_url} {folder} "
-        os.system(command)
+            logging.error(f"Error during S3 sync: {str(e)}")
+            return False

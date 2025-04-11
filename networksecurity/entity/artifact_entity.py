@@ -27,7 +27,7 @@ class ClassificationMetricArtifact:
     recall_score: float
     
 @dataclass  
-class ModelTrainArtifact:
+class ModelTrainerArtifact:
     trained_model_file_path: str
     trained_metric_artifact:ClassificationMetricArtifact
     test_metric_artifact: ClassificationMetricArtifact
