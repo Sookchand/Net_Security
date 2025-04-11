@@ -126,5 +126,5 @@ async def predict_route(request: Request, file: UploadFile = File(...)):
         return Response(f"An error occurred: {str(e)}", status_code=500)
 
 if __name__ == "__main__":
-    app_run(app, host="0.0.0.0", port=8000)
+    app_run(app, host="localhost", port=8000)
     
