@@ -90,45 +90,45 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-#   continuous-deployment:
-#     name: Continuous Deployment
-#     needs: build-and-push-ecr-image
-#     runs-on: self-hosted
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v3
+  continuous-deployment:
+    name: Continuous Deployment
+    needs: build-and-push-ecr-image
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v2
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: us-east-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-#       - name: Login to Amazon ECR
-#         id: login-ecr
-#         uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-#       - name: Deploy Container
-#         run: |
-#           # Stop and remove existing container if it exists
-#           docker rm -f netwroksecuritytrial || true
+      - name: Deploy Container
+        run: |
+          # Stop and remove existing container if it exists
+          docker rm -f netwroksecuritytrial || true
           
-#           # Pull latest image
-#           docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+          # Pull latest image
+          docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
           
-#           # Run new container
-#           docker run -d -p 8000:8000 --name netwroksecuritytrial \
-#             -e "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" \
-#             -e "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" \
-#             -e "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" \
-#             -e "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" \
-#             -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" \
-#             -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-#             -e "AWS_REGION=${{ secrets.AWS_REGION }}" \
-#             ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+          # Run new container
+          docker run -d -p 8000:8000 --name netwroksecuritytrial \
+            -e "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" \
+            -e "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" \
+            -e "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" \
+            -e "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" \
+            -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            -e "AWS_REGION=${{ secrets.AWS_REGION }}" \
+            ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
           
-#           # Clean up old images
-#           docker system prune -af
+          # Clean up old images
+          docker system prune -af
 
   
