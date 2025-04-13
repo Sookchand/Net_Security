@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pylint pytest pytest-cov
+          pip install pylint pytest
 
       - name: Lint Code
         run: |
@@ -40,7 +40,6 @@ jobs:
           echo "Running pytest..."
           pytest -v || true
 
-
   build-and-push-ecr-image:
     name: Continuous Delivery
     needs: integration
@@ -48,23 +47,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
-      - name: Install Utilities
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq unzip
-
-      - name: Set up Docker
-        run: |
-          sudo apt-get remove docker docker-engine docker.io containerd runc || true
-          sudo apt-get update
-          sudo apt-get install -y ca-certificates curl gnupg
-          sudo install -m 0755 -d /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          sudo chmod a+r /etc/apt/keyrings/docker.gpg
-          echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -77,27 +59,20 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, Tag, and Push Image to Amazon ECR
-        id: build-image
+      - name: Build and Push Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
-          echo "Building Docker image..."
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          echo "Pushing to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   continuous-deployment:
     name: Continuous Deployment
     needs: build-and-push-ecr-image
     runs-on: self-hosted
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -110,25 +85,30 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Deploy Container
+        shell: powershell
         run: |
-          # Stop and remove existing container if it exists
-          docker rm -f netwroksecuritytrial || true
+          # Stop and remove existing container if exists
+          docker rm -f netwroksecuritytrial 2>$null || true
           
           # Pull latest image
           docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
           
           # Run new container
-          docker run -d -p 8000:8000 --name netwroksecuritytrial \
-            -e "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" \
-            -e "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" \
-            -e "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" \
-            -e "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" \
-            -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            -e "AWS_REGION=${{ secrets.AWS_REGION }}" \
+          docker run -d `
+            --name netwroksecuritytrial `
+            --restart always `
+            -p 8000:8000 `
+            -e "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" `
+            -e "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" `
+            -e "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" `
+            -e "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" `
+            -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" `
+            -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" `
+            -e "AWS_REGION=${{ secrets.AWS_REGION }}" `
             ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+          # Verify container is running
+          docker ps | Select-String "netwroksecuritytrial"
           
           # Clean up old images
-          docker system prune -af
-
-  
+          docker system prune -f
