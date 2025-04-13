@@ -1,0 +1,6 @@
+[ 2025-04-13 12:27:07,654 ] 1025 httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+[ 2025-04-13 12:27:07,664 ] 107 dagshub - INFO - Accessing as Sookchand
+[ 2025-04-13 12:27:07,959 ] 1025 httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/repos/Sookchand/Net_Security "HTTP/1.1 200 OK"
+[ 2025-04-13 12:27:08,232 ] 1025 httpx - INFO - HTTP Request: GET https://dagshub.com/api/v1/user "HTTP/1.1 200 OK"
+[ 2025-04-13 12:27:08,240 ] 107 dagshub - INFO - Initialized MLflow to track repo "Sookchand/Net_Security"
+[ 2025-04-13 12:27:08,242 ] 107 dagshub - INFO - Repository Sookchand/Net_Security initialized!
