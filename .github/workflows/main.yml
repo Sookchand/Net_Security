@@ -85,30 +85,40 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Deploy Container
-        shell: powershell
+        shell: bash
+        env:
+          AWS_ECR_LOGIN_URI: ${{ secrets.AWS_ECR_LOGIN_URI }}
+          ECR_REPOSITORY_NAME: ${{ secrets.ECR_REPOSITORY_NAME }}
+          MONGO_DB_URL: ${{ secrets.MONGO_DB_URL }}
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           # Stop and remove existing container if exists
-          docker rm -f netwroksecuritytrial 2>$null || true
+          docker rm -f netwroksecuritytrial || true
           
           # Pull latest image
-          docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+          docker pull ${AWS_ECR_LOGIN_URI}/${ECR_REPOSITORY_NAME}:latest
           
           # Run new container
-          docker run -d `
-            --name netwroksecuritytrial `
-            --restart always `
-            -p 8000:8000 `
-            -e "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" `
-            -e "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" `
-            -e "MLFLOW_TRACKING_USERNAME=${{ secrets.MLFLOW_TRACKING_USERNAME }}" `
-            -e "MLFLOW_TRACKING_PASSWORD=${{ secrets.MLFLOW_TRACKING_PASSWORD }}" `
-            -e "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" `
-            -e "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" `
-            -e "AWS_REGION=${{ secrets.AWS_REGION }}" `
-            ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+          docker run -d \
+            --name netwroksecuritytrial \
+            --restart always \
+            -p 8000:8000 \
+            -e "MONGO_DB_URL=${MONGO_DB_URL}" \
+            -e "MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}" \
+            -e "MLFLOW_TRACKING_USERNAME=${MLFLOW_TRACKING_USERNAME}" \
+            -e "MLFLOW_TRACKING_PASSWORD=${MLFLOW_TRACKING_PASSWORD}" \
+            -e "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" \
+            -e "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" \
+            -e "AWS_REGION=${AWS_REGION}" \
+            ${AWS_ECR_LOGIN_URI}/${ECR_REPOSITORY_NAME}:latest
 
           # Verify container is running
-          docker ps | Select-String "netwroksecuritytrial"
+          docker ps | grep netwroksecuritytrial
           
           # Clean up old images
           docker system prune -f
