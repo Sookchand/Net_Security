@@ -6,6 +6,7 @@ on:
       - main
     paths-ignore:
       - 'README.md'
+  workflow_dispatch:  # Allow manual triggering
 
 permissions:
   id-token: write
@@ -99,10 +100,10 @@ jobs:
         run: |
           # Stop and remove existing container if exists
           docker rm -f netwroksecuritytrial || true
-          
+
           # Pull latest image
           docker pull ${AWS_ECR_LOGIN_URI}/${ECR_REPOSITORY_NAME}:latest
-          
+
           # Run new container
           docker run -d \
             --name netwroksecuritytrial \
@@ -119,6 +120,36 @@ jobs:
 
           # Verify container is running
           docker ps | grep netwroksecuritytrial
-          
+
           # Clean up old images
           docker system prune -f
+
+  test-application:
+    name: Test Application
+    needs: continuous-deployment
+    runs-on: self-hosted
+    steps:
+      - name: Wait for application to start
+        run: sleep 10
+
+      - name: Test application health endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/health)
+          echo "Response: $response"
+          if [[ "$response" == *"healthy"* ]]; then
+            echo "✅ Application is healthy"
+          else
+            echo "❌ Application health check failed"
+            exit 1
+          fi
+
+      - name: Test application root endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/)
+          echo "Response: $response"
+          if [[ "$response" == *"Network Security API is running"* ]]; then
+            echo "✅ Application root endpoint is working"
+          else
+            echo "❌ Application root endpoint check failed"
+            exit 1
+          fi

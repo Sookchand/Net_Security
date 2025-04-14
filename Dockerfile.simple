@@ -1,0 +1,14 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY simple_app_with_features.py app.py
+COPY requirements.simple.txt requirements.txt
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN mkdir -p templates
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

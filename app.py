@@ -196,7 +196,7 @@ async def predict_route(request: Request, file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     try:
-        host = os.getenv("HOST", "0.0.0.0")
+        host = os.getenv("HOST", "0.0.0.0/0")
         port = int(os.getenv("PORT", 8000))
         logging.info(f"Starting server on {host}:{port}")
         app_run(app, host=host, port=port)

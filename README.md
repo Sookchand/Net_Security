@@ -95,7 +95,7 @@ sudo apt-get upgrade
 
 #required
 
-curl -fsSL https://get.docker.com -o get-docker.sh
+curl -fsSL https://get.docker.com -o get-docker.shrm -rf actions-runner
 
 sudo sh get-docker.sh
 
