@@ -1,0 +1,90 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'enhanced_very_simple_app.py'
+      - 'Dockerfile.enhanced'
+      - '.github/workflows/deploy_ec2.yml'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload files to EC2
+        run: |
+          scp -i ~/.ssh/id_rsa enhanced_very_simple_app.py ec2-user@${{ secrets.EC2_HOST }}:~/
+          scp -i ~/.ssh/id_rsa Dockerfile.enhanced ec2-user@${{ secrets.EC2_HOST }}:~/
+          scp -i ~/.ssh/id_rsa requirements.very_simple.txt ec2-user@${{ secrets.EC2_HOST }}:~/
+          scp -i ~/.ssh/id_rsa deploy_enhanced.sh ec2-user@${{ secrets.EC2_HOST }}:~/
+          scp -i ~/.ssh/id_rsa sample_network_data.csv ec2-user@${{ secrets.EC2_HOST }}:~/
+
+      - name: Deploy application
+        run: |
+          ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "chmod +x ~/deploy_enhanced.sh && ~/deploy_enhanced.sh"
+
+      - name: Wait for application to start
+        run: sleep 15
+
+      - name: Check if container is running
+        run: |
+          CONTAINER_STATUS=$(ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "docker ps | grep netwroksecuritytrial || echo 'Container not running'")
+          echo "Container status: $CONTAINER_STATUS"
+          
+          if [[ "$CONTAINER_STATUS" == *"Container not running"* ]]; then
+            echo "❌ Container is not running"
+            echo "Checking container logs:"
+            ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "docker logs netwroksecuritytrial 2>&1 || echo 'No logs available'"
+            exit 1
+          else
+            echo "✅ Container is running"
+          fi
+
+      - name: Test root endpoint
+        run: |
+          ROOT_RESPONSE=$(ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "curl -s http://localhost:8000/ || echo 'Failed to connect'")
+          echo "Root endpoint response: $ROOT_RESPONSE"
+          
+          if [[ "$ROOT_RESPONSE" == *"Network Security API is running"* ]]; then
+            echo "✅ Root endpoint check passed"
+          else
+            echo "❌ Root endpoint check failed"
+            echo "Checking container logs:"
+            ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "docker logs netwroksecuritytrial 2>&1 || echo 'No logs available'"
+            exit 1
+          fi
+
+      - name: Test health endpoint
+        run: |
+          HEALTH_RESPONSE=$(ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "curl -s http://localhost:8000/health || echo 'Failed to connect'")
+          echo "Health endpoint response: $HEALTH_RESPONSE"
+          
+          if [[ "$HEALTH_RESPONSE" == *"healthy"* ]]; then
+            echo "✅ Health endpoint check passed"
+          else
+            echo "❌ Health endpoint check failed"
+            echo "Checking container logs:"
+            ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "docker logs netwroksecuritytrial 2>&1 || echo 'No logs available'"
+            exit 1
+          fi
+
+      - name: Deployment successful
+        run: |
+          PUBLIC_IP=$(ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "curl -s http://checkip.amazonaws.com || echo ${{ secrets.EC2_HOST }}")
+          echo "✅ Deployment successful!"
+          echo "Application is available at: http://$PUBLIC_IP:8000"
+          echo "API documentation: http://$PUBLIC_IP:8000/docs"

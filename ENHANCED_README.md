@@ -31,6 +31,10 @@ The enhanced version includes:
 ```bash
 python deploy.py --key my-key-pair.pem --host ec2-3-87-239-199.compute-1.amazonaws.com --enhanced
 ```
+"""
+(venv)
+python deploy.py --key my-key-pair.pem --host ec2-3-87-239-199.compute-1.amazonaws.com --enhanced
+"""
 
 The `--enhanced` flag tells the script to deploy the enhanced version.
 
