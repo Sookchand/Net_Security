@@ -1,0 +1,37 @@
+# Core dependencies
+fastapi==0.95.1
+uvicorn==0.22.0
+pandas==2.0.1
+numpy==1.24.3
+python-multipart==0.0.6
+scikit-learn
+python-dotenv
+
+# Web application dependencies
+jinja2==3.1.2
+aiofiles==23.1.0
+
+# Data storage
+pymongo>=3.6.0
+pymongo[srv]>=3.6.0
+
+# ML tracking and deployment
+mlflow
+dagshub
+pyaml
+
+# Visualization
+matplotlib
+seaborn
+
+# Utilities
+certifi
+
+# Development dependencies (uncomment for development)
+# pytest
+# black
+# flake8
+# mypy
+
+# Install the package in development mode
+# -e .

@@ -1,0 +1,30 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY requirements_consolidated.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY enhanced_app_with_templates.py app.py
+COPY sample_network_data.csv sample_network_data.csv
+
+# Copy templates and static files
+COPY app/ app/
+
+# Copy model files
+COPY models/ models/
+
+# Create necessary directories
+RUN mkdir -p data/raw data/processed
+
+# Expose port
+EXPOSE 8000
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Run the application
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
