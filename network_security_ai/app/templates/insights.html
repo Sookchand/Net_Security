@@ -1,0 +1,653 @@
+{% extends "components/header.html" %}
+
+{% block title %}Security Insights{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Security Insights
+                </h2>
+                <p class="card-text">
+                    Detailed analysis and insights for security event <strong id="event-id">{{ event_id }}</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>
+                    Event Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="event-loading" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading event details...</p>
+                </div>
+                <div id="event-details" class="d-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-brain me-2"></i>
+                    AI Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="insights-loading" class="text-center">
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Generating AI insights...</p>
+                </div>
+                <div id="insights-content" class="d-none">
+                    <ul class="nav nav-tabs" id="insightsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="explanation-tab" data-bs-toggle="tab" data-bs-target="#explanation" type="button" role="tab">
+                                <i class="fas fa-comment-alt me-2"></i>
+                                Explanation
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations" type="button" role="tab">
+                                <i class="fas fa-list-ul me-2"></i>
+                                Recommendations
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="technical-tab" data-bs-toggle="tab" data-bs-target="#technical" type="button" role="tab">
+                                <i class="fas fa-code me-2"></i>
+                                Technical Details
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content p-3 border border-top-0 rounded-bottom" id="insightsTabContent">
+                        <div class="tab-pane fade show active" id="explanation" role="tabpanel"></div>
+                        <div class="tab-pane fade" id="recommendations" role="tabpanel"></div>
+                        <div class="tab-pane fade" id="technical" role="tabpanel"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Visualizations
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="visualizations-loading" class="text-center">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Preparing visualizations...</p>
+                </div>
+                <div id="visualizations-content" class="d-none">
+                    <div id="severity-gauge" class="mb-4" style="height: 200px;"></div>
+                    <div id="event-chart" style="height: 200px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>
+                    Interactive Q&A
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="qa-container">
+                    <div id="conversation-history" class="mb-3 p-3 border rounded" style="max-height: 300px; overflow-y: auto;"></div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="question-input" class="form-control" placeholder="Ask a question about this security event...">
+                        <button id="ask-question-btn" class="btn btn-warning">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Ask
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Similar Events
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="similar-loading" class="text-center">
+                    <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Finding similar events...</p>
+                </div>
+                <div id="similar-events" class="d-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentConversationId = null;
+    let eventData = null;
+    let insightsData = null;
+    
+    // Function to load event details
+    async function loadEventDetails() {
+        const eventId = document.getElementById('event-id').textContent;
+        
+        // In a real application, this would fetch the event from the API
+        // For this demo, we'll use sample data
+        
+        try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            if (eventId.includes('drift')) {
+                const response = await fetch('/api/sample/drift');
+                const data = await response.json();
+                eventData = data.event;
+                insightsData = data.insights;
+            } else {
+                const response = await fetch('/api/sample/attack');
+                const data = await response.json();
+                eventData = data.event;
+                insightsData = data.insights;
+            }
+            
+            // Store the conversation ID
+            currentConversationId = insightsData.conversation_id;
+            
+            // Update the event details
+            updateEventDetails();
+            
+            // Update the insights
+            updateInsights();
+            
+            // Update the visualizations
+            updateVisualizations();
+            
+            // Update similar events
+            updateSimilarEvents();
+            
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('event-details').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Error loading event details: ${error.message}
+                </div>
+            `;
+            document.getElementById('event-details').classList.remove('d-none');
+            document.getElementById('event-loading').classList.add('d-none');
+        }
+    }
+    
+    // Function to update event details
+    function updateEventDetails() {
+        const eventDetails = document.getElementById('event-details');
+        
+        if (eventData.event_type === 'drift_detected') {
+            eventDetails.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table">
+                            <tr>
+                                <th>Event Type:</th>
+                                <td>Drift Detection</td>
+                            </tr>
+                            <tr>
+                                <th>Drift Score:</th>
+                                <td>${eventData.drift_score}</td>
+                            </tr>
+                            <tr>
+                                <th>Severity:</th>
+                                <td>
+                                    <span class="badge bg-${eventData.severity === 'Critical' ? 'danger' : 
+                                                            eventData.severity === 'High' ? 'warning' : 
+                                                            eventData.severity === 'Medium' ? 'info' : 'success'}">
+                                        ${eventData.severity}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Timestamp:</th>
+                                <td>${new Date(eventData.timestamp).toLocaleString()}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Affected Features:</h6>
+                        <ul class="list-group">
+                            ${eventData.features.map(feature => `
+                                <li class="list-group-item">
+                                    <i class="fas fa-chart-line text-primary me-2"></i>
+                                    ${feature}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        } else {
+            eventDetails.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table">
+                            <tr>
+                                <th>Event Type:</th>
+                                <td>Attack Detection</td>
+                            </tr>
+                            <tr>
+                                <th>Attack Type:</th>
+                                <td>${eventData.attack_type}</td>
+                            </tr>
+                            <tr>
+                                <th>Source IP:</th>
+                                <td>${eventData.source_ip}</td>
+                            </tr>
+                            <tr>
+                                <th>Destination IP:</th>
+                                <td>${eventData.destination_ip}</td>
+                            </tr>
+                            <tr>
+                                <th>Protocol:</th>
+                                <td>${eventData.protocol}</td>
+                            </tr>
+                            <tr>
+                                <th>Confidence:</th>
+                                <td>${(eventData.confidence * 100).toFixed(1)}%</td>
+                            </tr>
+                            <tr>
+                                <th>Timestamp:</th>
+                                <td>${new Date(eventData.timestamp).toLocaleString()}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Affected Systems:</h6>
+                        <ul class="list-group">
+                            ${eventData.affected_systems.map(system => `
+                                <li class="list-group-item">
+                                    <i class="fas fa-server text-danger me-2"></i>
+                                    ${system}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        eventDetails.classList.remove('d-none');
+        document.getElementById('event-loading').classList.add('d-none');
+    }
+    
+    // Function to update insights
+    function updateInsights() {
+        // Update explanation tab
+        document.getElementById('explanation').innerHTML = `
+            <div class="alert alert-${insightsData.severity === 'Critical' || insightsData.severity === 'High' ? 'danger' : 'warning'}">
+                <strong>Severity:</strong> ${insightsData.severity}
+            </div>
+            <p>${insightsData.explanation}</p>
+        `;
+        
+        // Update recommendations tab
+        document.getElementById('recommendations').innerHTML = `
+            <ul class="list-group">
+                ${insightsData.recommendations.map((rec, index) => `
+                    <li class="list-group-item">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <span class="badge bg-primary rounded-pill">${index + 1}</span>
+                            </div>
+                            <div>
+                                ${rec}
+                            </div>
+                        </div>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+        
+        // Update technical details tab
+        document.getElementById('technical').innerHTML = `
+            <div class="border rounded p-2 bg-light">
+                <pre style="white-space: pre-wrap;">${insightsData.technical_details}</pre>
+            </div>
+        `;
+        
+        // Update conversation history
+        document.getElementById('conversation-history').innerHTML = `
+            <div class="alert alert-secondary">
+                <strong>System:</strong> Analyzing ${eventData.event_type === 'drift_detected' ? 
+                    `drift event with score ${eventData.drift_score}` : 
+                    `${eventData.attack_type} attack from ${eventData.source_ip} to ${eventData.destination_ip}`}
+            </div>
+            <div class="alert alert-info">
+                <strong>AI:</strong> ${insightsData.explanation}
+            </div>
+        `;
+        
+        document.getElementById('insights-content').classList.remove('d-none');
+        document.getElementById('insights-loading').classList.add('d-none');
+    }
+    
+    // Function to update visualizations
+    function updateVisualizations() {
+        const visualizationsContent = document.getElementById('visualizations-content');
+        
+        // Create severity gauge
+        const severityValues = {
+            'Critical': 90,
+            'High': 70,
+            'Medium': 50,
+            'Low': 30
+        };
+        
+        const severityColors = {
+            'Critical': '#e74c3c',
+            'High': '#e67e22',
+            'Medium': '#f1c40f',
+            'Low': '#3498db'
+        };
+        
+        const gaugeData = [
+            {
+                domain: { x: [0, 1], y: [0, 1] },
+                value: severityValues[insightsData.severity] || 50,
+                title: { text: "Severity" },
+                type: "indicator",
+                mode: "gauge+number",
+                gauge: {
+                    axis: { range: [0, 100] },
+                    bar: { color: severityColors[insightsData.severity] || "#95a5a6" },
+                    steps: [
+                        { range: [0, 30], color: "#ecf0f1" },
+                        { range: [30, 50], color: "#3498db" },
+                        { range: [50, 70], color: "#f1c40f" },
+                        { range: [70, 90], color: "#e67e22" },
+                        { range: [90, 100], color: "#e74c3c" }
+                    ]
+                }
+            }
+        ];
+        
+        Plotly.newPlot('severity-gauge', gaugeData, {
+            margin: { t: 25, r: 25, b: 25, l: 25 }
+        });
+        
+        // Create event-specific chart
+        if (eventData.event_type === 'drift_detected') {
+            // Create features chart for drift event
+            const featuresData = {
+                x: eventData.features,
+                y: eventData.features.map(() => Math.random() * 0.5 + 0.5), // Simulated drift values
+                type: 'bar',
+                marker: {
+                    color: eventData.features.map(() => severityColors[insightsData.severity])
+                }
+            };
+            
+            Plotly.newPlot('event-chart', [featuresData], {
+                margin: { t: 10, r: 10, b: 50, l: 50 },
+                title: 'Feature Drift'
+            });
+        } else {
+            // Create attack visualization
+            const attackData = {
+                type: 'scatterpolar',
+                r: [90, 60, 80, 70, 85],
+                theta: ['Traffic Volume', 'Duration', 'Packet Size', 'Protocol Anomaly', 'Connection Rate'],
+                fill: 'toself',
+                name: 'Attack Pattern',
+                marker: { color: '#e74c3c' }
+            };
+            
+            const normalData = {
+                type: 'scatterpolar',
+                r: [40, 30, 35, 25, 45],
+                theta: ['Traffic Volume', 'Duration', 'Packet Size', 'Protocol Anomaly', 'Connection Rate'],
+                fill: 'toself',
+                name: 'Normal Pattern',
+                marker: { color: '#3498db' }
+            };
+            
+            Plotly.newPlot('event-chart', [attackData, normalData], {
+                polar: {
+                    radialaxis: {
+                        visible: true,
+                        range: [0, 100]
+                    }
+                },
+                showlegend: true,
+                legend: { orientation: 'h' },
+                margin: { t: 30, r: 10, b: 10, l: 10 },
+                title: 'Attack Pattern Analysis'
+            });
+        }
+        
+        visualizationsContent.classList.remove('d-none');
+        document.getElementById('visualizations-loading').classList.add('d-none');
+    }
+    
+    // Function to update similar events
+    function updateSimilarEvents() {
+        const similarEvents = document.getElementById('similar-events');
+        
+        // Simulate similar events
+        const events = [];
+        
+        if (eventData.event_type === 'drift_detected') {
+            events.push({
+                id: 'drift-001',
+                type: 'drift_detected',
+                timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+                score: 0.28,
+                features: ['packet_size', 'protocol_distribution'],
+                similarity: 0.85
+            });
+            
+            events.push({
+                id: 'drift-002',
+                type: 'drift_detected',
+                timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+                score: 0.42,
+                features: ['connection_duration', 'protocol_distribution'],
+                similarity: 0.72
+            });
+        } else {
+            events.push({
+                id: 'attack-001',
+                type: 'attack_detected',
+                timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+                attack_type: eventData.attack_type,
+                source_ip: '192.168.1.105',
+                destination_ip: '10.0.0.8',
+                similarity: 0.88
+            });
+            
+            events.push({
+                id: 'attack-002',
+                type: 'attack_detected',
+                timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+                attack_type: eventData.attack_type,
+                source_ip: '192.168.1.110',
+                destination_ip: '10.0.0.12',
+                similarity: 0.76
+            });
+        }
+        
+        // Create HTML for similar events
+        let eventsHtml = `
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Event ID</th>
+                            <th>Type</th>
+                            <th>Timestamp</th>
+                            <th>Details</th>
+                            <th>Similarity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        for (const event of events) {
+            eventsHtml += `
+                <tr>
+                    <td>${event.id}</td>
+                    <td>${event.type === 'drift_detected' ? 'Drift' : 'Attack'}</td>
+                    <td>${new Date(event.timestamp).toLocaleString()}</td>
+                    <td>
+                        ${event.type === 'drift_detected' ? 
+                            `Score: ${event.score}, Features: ${event.features.join(', ')}` : 
+                            `${event.attack_type} from ${event.source_ip} to ${event.destination_ip}`}
+                    </td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: ${event.similarity * 100}%">
+                                ${(event.similarity * 100).toFixed(0)}%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        eventsHtml += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        similarEvents.innerHTML = eventsHtml;
+        similarEvents.classList.remove('d-none');
+        document.getElementById('similar-loading').classList.add('d-none');
+    }
+    
+    // Function to ask a follow-up question
+    async function askQuestion() {
+        const questionInput = document.getElementById('question-input');
+        const question = questionInput.value.trim();
+        
+        if (!question || !currentConversationId) return;
+        
+        // Add the question to the conversation history
+        const conversationHistory = document.getElementById('conversation-history');
+        conversationHistory.innerHTML += `
+            <div class="alert alert-secondary">
+                <strong>You:</strong> ${question}
+            </div>
+            <div class="text-center my-2">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        
+        // Scroll to the bottom of the conversation
+        conversationHistory.scrollTop = conversationHistory.scrollHeight;
+        
+        // Clear the input
+        questionInput.value = '';
+        
+        try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Generate a response based on the question
+            let response;
+            
+            if (question.toLowerCase().includes('why') || question.toLowerCase().includes('how')) {
+                response = `Based on the analysis, ${insightsData.explanation.split('.')[0]}. This is significant because it indicates a potential ${eventData.event_type === 'drift_detected' ? 'change in network behavior' : 'security breach'}. The technical details show that ${insightsData.technical_details.split('.')[0]}.`;
+            } else if (question.toLowerCase().includes('what')) {
+                response = `The ${eventData.event_type === 'drift_detected' ? 'drift event' : eventData.attack_type + ' attack'} is characterized by ${insightsData.technical_details.split('.')[0]}. This is important to address because it could lead to ${insightsData.recommendations[0].toLowerCase()}.`;
+            } else if (question.toLowerCase().includes('recommend') || question.toLowerCase().includes('should')) {
+                response = `I recommend the following actions: 1) ${insightsData.recommendations[0]}, 2) ${insightsData.recommendations[1] || 'Monitor the system for similar patterns'}, and 3) ${insightsData.recommendations[2] || 'Update your security protocols accordingly'}.`;
+            } else {
+                response = `This ${eventData.event_type === 'drift_detected' ? 'drift event' : eventData.attack_type + ' attack'} requires attention because ${insightsData.explanation.split('.')[0]}. I recommend ${insightsData.recommendations[0]} as a first step to address this issue.`;
+            }
+            
+            // Remove the loading spinner
+            conversationHistory.removeChild(conversationHistory.lastChild);
+            
+            // Add the response to the conversation history
+            conversationHistory.innerHTML += `
+                <div class="alert alert-info">
+                    <strong>AI:</strong> ${response}
+                </div>
+            `;
+            
+            // Scroll to the bottom of the conversation
+            conversationHistory.scrollTop = conversationHistory.scrollHeight;
+            
+        } catch (error) {
+            console.error('Error:', error);
+            
+            // Remove the loading spinner
+            conversationHistory.removeChild(conversationHistory.lastChild);
+            
+            // Add the error to the conversation history
+            conversationHistory.innerHTML += `
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        }
+    }
+    
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load event details
+        loadEventDetails();
+        
+        // Add event listener for ask question button
+        document.getElementById('ask-question-btn').addEventListener('click', askQuestion);
+        
+        // Add event listener for Enter key in question input
+        document.getElementById('question-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askQuestion();
+            }
+        });
+    });
+</script>
+{% endblock %}

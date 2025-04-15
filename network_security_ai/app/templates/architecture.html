@@ -1,0 +1,628 @@
+{% extends "components/header.html" %}
+
+{% block title %}System Architecture{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-project-diagram me-2"></i>
+                    Network Security AI Platform Architecture
+                </h2>
+                <p class="card-text">
+                    Comprehensive overview of the system architecture and component interactions.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-sitemap me-2"></i>
+                    High-Level Architecture
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="architecture-diagram text-center mb-4">
+                    <svg width="100%" height="500" id="high-level-architecture"></svg>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Key Components</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-database text-primary me-2"></i>
+                                <strong>Data Ingestion</strong>: Collects and processes network traffic data
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <strong>Data Validation</strong>: Ensures data quality and consistency
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-random text-info me-2"></i>
+                                <strong>Data Transformation</strong>: Prepares data for model training
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-brain text-warning me-2"></i>
+                                <strong>Model Training</strong>: Trains machine learning models
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-search text-danger me-2"></i>
+                                <strong>Prediction</strong>: Detects security threats in network traffic
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Integration Points</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-robot text-primary me-2"></i>
+                                <strong>Gemini API</strong>: Provides natural language insights
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-chart-bar text-success me-2"></i>
+                                <strong>Visualization Engine</strong>: Creates interactive dashboards
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-comments text-info me-2"></i>
+                                <strong>Q&A System</strong>: Enables interactive analysis
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-cloud text-warning me-2"></i>
+                                <strong>MLflow</strong>: Tracks experiments and models
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-server text-danger me-2"></i>
+                                <strong>FastAPI</strong>: Provides RESTful API endpoints
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Training Pipeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="architecture-diagram text-center mb-4">
+                    <svg width="100%" height="300" id="training-pipeline"></svg>
+                </div>
+                <h6>Pipeline Stages</h6>
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Ingestion</div>
+                            Collects data from various sources and creates training/testing datasets
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Validation</div>
+                            Validates data schema and quality, identifies drift
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Transformation</div>
+                            Applies preprocessing, feature engineering, and normalization
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Model Training</div>
+                            Trains multiple models and selects the best performer
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Model Evaluation</div>
+                            Evaluates model performance using various metrics
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>
+                    Prediction Pipeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="architecture-diagram text-center mb-4">
+                    <svg width="100%" height="300" id="prediction-pipeline"></svg>
+                </div>
+                <h6>Pipeline Stages</h6>
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Loading</div>
+                            Loads network traffic data from files or directories
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Preprocessing</div>
+                            Applies the same transformations used during training
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Model Prediction</div>
+                            Uses the trained model to detect security threats
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">AI Analysis</div>
+                            Generates natural language insights using Gemini API
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Visualization</div>
+                            Creates interactive dashboards and reports
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-brain me-2"></i>
+                    AI Components
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="architecture-diagram text-center mb-4">
+                    <svg width="100%" height="300" id="ai-components"></svg>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Machine Learning Models</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Random Forest</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Gradient Boosting</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Logistic Regression</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Decision Tree</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>AdaBoost</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">Gemini API Integration</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Natural Language Insights</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Interactive Q&A</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Security Recommendations</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Technical Analysis</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Threat Assessment</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0">Drift Detection</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Statistical Analysis</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Feature Distribution Monitoring</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Anomaly Detection</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Severity Assessment</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Automated Alerts</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-code me-2"></i>
+                    Technology Stack
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6>Backend</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fab fa-python text-primary me-2"></i>
+                                Python 3.10+
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-server text-success me-2"></i>
+                                FastAPI
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-cogs text-info me-2"></i>
+                                Uvicorn
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-file-code text-warning me-2"></i>
+                                Jinja2 Templates
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Machine Learning</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-brain text-primary me-2"></i>
+                                Scikit-learn
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-table text-success me-2"></i>
+                                Pandas
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-calculator text-info me-2"></i>
+                                NumPy
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-cloud text-warning me-2"></i>
+                                MLflow
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>AI & NLP</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-robot text-primary me-2"></i>
+                                Google Gemini API
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-comments text-success me-2"></i>
+                                Natural Language Processing
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-search text-info me-2"></i>
+                                Semantic Analysis
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>
+                                Generative AI
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Frontend</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fab fa-html5 text-primary me-2"></i>
+                                HTML5
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fab fa-css3-alt text-success me-2"></i>
+                                CSS3
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fab fa-js text-info me-2"></i>
+                                JavaScript
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fab fa-bootstrap text-warning me-2"></i>
+                                Bootstrap 5
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-chart-bar text-danger me-2"></i>
+                                Chart.js
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // High-level architecture diagram
+        drawHighLevelArchitecture();
+        
+        // Training pipeline diagram
+        drawTrainingPipeline();
+        
+        // Prediction pipeline diagram
+        drawPredictionPipeline();
+        
+        // AI components diagram
+        drawAIComponents();
+    });
+    
+    function drawHighLevelArchitecture() {
+        const svg = d3.select("#high-level-architecture");
+        const width = parseInt(svg.style("width"));
+        const height = parseInt(svg.style("height"));
+        
+        // Define nodes
+        const nodes = [
+            { id: "data", label: "Network Data", x: 100, y: 250, color: "#3498db" },
+            { id: "ingestion", label: "Data Ingestion", x: 250, y: 150, color: "#2ecc71" },
+            { id: "validation", label: "Data Validation", x: 250, y: 250, color: "#e74c3c" },
+            { id: "transformation", label: "Data Transformation", x: 250, y: 350, color: "#f39c12" },
+            { id: "training", label: "Model Training", x: 400, y: 200, color: "#9b59b6" },
+            { id: "prediction", label: "Prediction", x: 400, y: 300, color: "#1abc9c" },
+            { id: "gemini", label: "Gemini API", x: 550, y: 250, color: "#e67e22" },
+            { id: "dashboard", label: "Dashboard", x: 700, y: 250, color: "#3498db" }
+        ];
+        
+        // Define links
+        const links = [
+            { source: "data", target: "ingestion" },
+            { source: "data", target: "validation" },
+            { source: "data", target: "transformation" },
+            { source: "ingestion", target: "training" },
+            { source: "validation", target: "training" },
+            { source: "transformation", target: "training" },
+            { source: "training", target: "prediction" },
+            { source: "prediction", target: "gemini" },
+            { source: "gemini", target: "dashboard" }
+        ];
+        
+        // Draw links
+        links.forEach(link => {
+            const source = nodes.find(n => n.id === link.source);
+            const target = nodes.find(n => n.id === link.target);
+            
+            svg.append("line")
+                .attr("x1", source.x)
+                .attr("y1", source.y)
+                .attr("x2", target.x)
+                .attr("y2", target.y)
+                .attr("stroke", "#aaa")
+                .attr("stroke-width", 2);
+        });
+        
+        // Draw nodes
+        nodes.forEach(node => {
+            // Node circle
+            svg.append("circle")
+                .attr("cx", node.x)
+                .attr("cy", node.y)
+                .attr("r", 40)
+                .attr("fill", node.color);
+            
+            // Node label
+            svg.append("text")
+                .attr("x", node.x)
+                .attr("y", node.y)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "12px")
+                .attr("font-weight", "bold")
+                .text(node.label);
+        });
+    }
+    
+    function drawTrainingPipeline() {
+        const svg = d3.select("#training-pipeline");
+        const width = parseInt(svg.style("width"));
+        const height = parseInt(svg.style("height"));
+        
+        // Define stages
+        const stages = [
+            { id: "ingestion", label: "Data Ingestion", x: 100, y: 150, color: "#3498db" },
+            { id: "validation", label: "Data Validation", x: 250, y: 150, color: "#2ecc71" },
+            { id: "transformation", label: "Data Transformation", x: 400, y: 150, color: "#e74c3c" },
+            { id: "training", label: "Model Training", x: 550, y: 150, color: "#9b59b6" },
+            { id: "evaluation", label: "Model Evaluation", x: 700, y: 150, color: "#f39c12" }
+        ];
+        
+        // Draw connections
+        for (let i = 0; i < stages.length - 1; i++) {
+            svg.append("line")
+                .attr("x1", stages[i].x + 50)
+                .attr("y1", stages[i].y)
+                .attr("x2", stages[i+1].x - 50)
+                .attr("y2", stages[i+1].y)
+                .attr("stroke", "#aaa")
+                .attr("stroke-width", 2)
+                .attr("marker-end", "url(#arrow)");
+        }
+        
+        // Draw stages
+        stages.forEach(stage => {
+            // Stage rectangle
+            svg.append("rect")
+                .attr("x", stage.x - 50)
+                .attr("y", stage.y - 30)
+                .attr("width", 100)
+                .attr("height", 60)
+                .attr("rx", 10)
+                .attr("ry", 10)
+                .attr("fill", stage.color);
+            
+            // Stage label
+            svg.append("text")
+                .attr("x", stage.x)
+                .attr("y", stage.y)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "12px")
+                .attr("font-weight", "bold")
+                .text(stage.label);
+        });
+        
+        // Add arrow marker definition
+        svg.append("defs").append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 8)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#aaa");
+    }
+    
+    function drawPredictionPipeline() {
+        const svg = d3.select("#prediction-pipeline");
+        const width = parseInt(svg.style("width"));
+        const height = parseInt(svg.style("height"));
+        
+        // Define stages
+        const stages = [
+            { id: "loading", label: "Data Loading", x: 100, y: 150, color: "#3498db" },
+            { id: "preprocessing", label: "Data Preprocessing", x: 250, y: 150, color: "#2ecc71" },
+            { id: "prediction", label: "Model Prediction", x: 400, y: 150, color: "#e74c3c" },
+            { id: "analysis", label: "AI Analysis", x: 550, y: 150, color: "#9b59b6" },
+            { id: "visualization", label: "Visualization", x: 700, y: 150, color: "#f39c12" }
+        ];
+        
+        // Draw connections
+        for (let i = 0; i < stages.length - 1; i++) {
+            svg.append("line")
+                .attr("x1", stages[i].x + 50)
+                .attr("y1", stages[i].y)
+                .attr("x2", stages[i+1].x - 50)
+                .attr("y2", stages[i+1].y)
+                .attr("stroke", "#aaa")
+                .attr("stroke-width", 2)
+                .attr("marker-end", "url(#arrow2)");
+        }
+        
+        // Draw stages
+        stages.forEach(stage => {
+            // Stage rectangle
+            svg.append("rect")
+                .attr("x", stage.x - 50)
+                .attr("y", stage.y - 30)
+                .attr("width", 100)
+                .attr("height", 60)
+                .attr("rx", 10)
+                .attr("ry", 10)
+                .attr("fill", stage.color);
+            
+            // Stage label
+            svg.append("text")
+                .attr("x", stage.x)
+                .attr("y", stage.y)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "12px")
+                .attr("font-weight", "bold")
+                .text(stage.label);
+        });
+        
+        // Add arrow marker definition
+        svg.append("defs").append("marker")
+            .attr("id", "arrow2")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 8)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#aaa");
+    }
+    
+    function drawAIComponents() {
+        const svg = d3.select("#ai-components");
+        const width = parseInt(svg.style("width"));
+        const height = parseInt(svg.style("height"));
+        
+        // Define components
+        const components = [
+            { id: "ml", label: "Machine Learning Models", x: 200, y: 150, color: "#3498db", radius: 80 },
+            { id: "gemini", label: "Gemini API", x: 400, y: 150, color: "#2ecc71", radius: 80 },
+            { id: "drift", label: "Drift Detection", x: 600, y: 150, color: "#e74c3c", radius: 80 }
+        ];
+        
+        // Draw connections
+        svg.append("line")
+            .attr("x1", components[0].x + components[0].radius)
+            .attr("y1", components[0].y)
+            .attr("x2", components[1].x - components[1].radius)
+            .attr("y2", components[1].y)
+            .attr("stroke", "#aaa")
+            .attr("stroke-width", 2);
+            
+        svg.append("line")
+            .attr("x1", components[1].x + components[1].radius)
+            .attr("y1", components[1].y)
+            .attr("x2", components[2].x - components[2].radius)
+            .attr("y2", components[2].y)
+            .attr("stroke", "#aaa")
+            .attr("stroke-width", 2);
+        
+        // Draw components
+        components.forEach(component => {
+            // Component circle
+            svg.append("circle")
+                .attr("cx", component.x)
+                .attr("cy", component.y)
+                .attr("r", component.radius)
+                .attr("fill", component.color);
+            
+            // Component label
+            svg.append("text")
+                .attr("x", component.x)
+                .attr("y", component.y)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "14px")
+                .attr("font-weight", "bold")
+                .text(component.label);
+        });
+    }
+</script>
+{% endblock %}

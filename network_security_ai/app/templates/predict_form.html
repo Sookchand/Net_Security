@@ -1,0 +1,120 @@
+{% extends "components/header.html" %}
+
+{% block title %}Network Security Prediction{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Network Security Prediction
+                </h2>
+                <p class="card-text">
+                    Upload a CSV file with network traffic data or select a sample dataset to analyze.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>
+                    Upload Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/predict" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select CSV file</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv">
+                        <div class="form-text">Upload a CSV file with network traffic data.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-folder-open me-2"></i>
+                    Sample Datasets
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Select a sample dataset to analyze:</p>
+                <div class="list-group">
+                    <button id="sample-dataset-1" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv me-2"></i>
+                        Sample Network Traffic (Normal)
+                    </button>
+                    <button id="sample-dataset-2" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv me-2"></i>
+                        Sample Network Traffic (With Attacks)
+                    </button>
+                    <button id="sample-dataset-3" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv me-2"></i>
+                        Sample Network Traffic (Mixed)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-folder me-2"></i>
+                    Load from Directory
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="/predict-from-directory" method="post">
+                    <div class="mb-3">
+                        <label for="directory" class="form-label">Data Directory Path</label>
+                        <input type="text" class="form-control" id="directory" name="directory" placeholder="Enter directory path (e.g., D:\Data\NetworkTraffic)">
+                        <div class="form-text">Enter the path to a directory containing CSV files with network traffic data.</div>
+                    </div>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Directory
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sample dataset buttons
+        document.getElementById('sample-dataset-1').addEventListener('click', function() {
+            window.location.href = '/predict-sample/1';
+        });
+        
+        document.getElementById('sample-dataset-2').addEventListener('click', function() {
+            window.location.href = '/predict-sample/2';
+        });
+        
+        document.getElementById('sample-dataset-3').addEventListener('click', function() {
+            window.location.href = '/predict-sample/3';
+        });
+    });
+</script>
+{% endblock %}

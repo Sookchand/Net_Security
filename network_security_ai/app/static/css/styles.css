@@ -1,0 +1,137 @@
+/* Custom styles for Network Security AI Platform */
+
+/* General styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #343a40;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+/* Dashboard styles */
+.dashboard-stat {
+    text-align: center;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.dashboard-stat .stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.dashboard-stat .stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.dashboard-stat .stat-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Severity indicators */
+.severity-critical {
+    color: #e74c3c;
+}
+
+.severity-high {
+    color: #e67e22;
+}
+
+.severity-medium {
+    color: #f1c40f;
+}
+
+.severity-low {
+    color: #3498db;
+}
+
+/* Chart containers */
+.chart-container {
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+/* Conversation styles */
+.conversation-bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    max-width: 80%;
+}
+
+.conversation-user {
+    background-color: #e9ecef;
+    margin-left: auto;
+    border-top-right-radius: 0;
+}
+
+.conversation-ai {
+    background-color: #d1ecf1;
+    margin-right: auto;
+    border-top-left-radius: 0;
+}
+
+/* Recommendations list */
+.recommendation-item {
+    padding: 10px;
+    border-left: 4px solid #3498db;
+    background-color: #f8f9fa;
+    margin-bottom: 10px;
+}
+
+.recommendation-item:hover {
+    background-color: #e9ecef;
+}
+
+/* Technical details */
+.technical-details {
+    font-family: 'Consolas', 'Monaco', monospace;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    white-space: pre-wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-title {
+        font-size: 1.2rem;
+    }
+    
+    .dashboard-stat .stat-icon {
+        font-size: 2rem;
+    }
+    
+    .dashboard-stat .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    body {
+        background-color: white;
+    }
+}

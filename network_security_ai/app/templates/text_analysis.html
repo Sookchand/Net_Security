@@ -1,0 +1,531 @@
+{% extends "components/header.html" %}
+
+{% block title %}Email & Text Threat Analysis{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-envelope me-2"></i>
+                    Email & Text Threat Analysis
+                </h2>
+                <p class="card-text">
+                    Analyze emails and text content for potential security threats using AI.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Paste Text Content
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="text-analysis-form">
+                    <div class="mb-3">
+                        <label for="text-content" class="form-label">Email or Text Content</label>
+                        <textarea class="form-control" id="text-content" name="text_content" rows="10" placeholder="Paste email or text content here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Content
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>
+                    Upload Email File
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="email-upload-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="email-file" class="form-label">Email File (.eml, .txt)</label>
+                        <input type="file" class="form-control" id="email-file" name="email_file" accept=".eml,.txt">
+                        <div class="form-text">Upload an email file (.eml) or text file (.txt) for analysis.</div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze File
+                    </button>
+                </form>
+                
+                <div class="mt-4">
+                    <h6>Sample Emails</h6>
+                    <div class="list-group">
+                        <button id="sample-email-1" class="list-group-item list-group-item-action">
+                            <i class="fas fa-envelope me-2"></i>
+                            Sample Phishing Email
+                        </button>
+                        <button id="sample-email-2" class="list-group-item list-group-item-action">
+                            <i class="fas fa-envelope me-2"></i>
+                            Sample Malware Email
+                        </button>
+                        <button id="sample-email-3" class="list-group-item list-group-item-action">
+                            <i class="fas fa-envelope me-2"></i>
+                            Sample Safe Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card d-none" id="analysis-results-card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Threat Analysis Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="analysis-loading" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing content for security threats...</p>
+                </div>
+                
+                <div id="analysis-results" class="d-none">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="threat-alert" class="alert">
+                                <!-- Will be filled dynamically -->
+                            </div>
+                            
+                            <h6>Analysis Summary</h6>
+                            <div id="analysis-summary" class="mb-3">
+                                <!-- Will be filled dynamically -->
+                            </div>
+                            
+                            <h6>Detected Threats</h6>
+                            <ul class="list-group mb-3" id="detected-threats">
+                                <!-- Will be filled dynamically -->
+                            </ul>
+                            
+                            <h6>Recommendations</h6>
+                            <ul class="list-group mb-3" id="recommendations">
+                                <!-- Will be filled dynamically -->
+                            </ul>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Threat Score</h6>
+                                    <div class="display-4 mb-2" id="threat-score">0</div>
+                                    <div class="progress">
+                                        <div id="threat-score-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="text-muted mt-2" id="threat-level-text">Safe</div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Threat Categories</h6>
+                                    <canvas id="threat-categories-chart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Ask a Question</h6>
+                        <div class="input-group">
+                            <input type="text" id="question-input" class="form-control" placeholder="Ask a question about this analysis...">
+                            <button id="ask-question-btn" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Ask
+                            </button>
+                        </div>
+                        <div id="question-answer" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form submission handlers
+        document.getElementById('text-analysis-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const textContent = document.getElementById('text-content').value.trim();
+            
+            if (textContent) {
+                analyzeText(textContent);
+            }
+        });
+        
+        document.getElementById('email-upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const emailFile = document.getElementById('email-file').files[0];
+            
+            if (emailFile) {
+                analyzeEmailFile(emailFile);
+            }
+        });
+        
+        // Sample email buttons
+        document.getElementById('sample-email-1').addEventListener('click', function() {
+            const phishingEmail = `From: security@bankofamerica-secure.com
+To: customer@example.com
+Subject: URGENT: Your Bank of America account has been suspended
+
+Dear Valued Customer,
+
+We have detected unusual activity on your Bank of America account. Your account has been temporarily suspended for security reasons.
+
+To restore your account access, please click the link below and verify your information:
+https://bankofamerica-secure.verify-now.com/login
+
+This is an urgent matter that requires your immediate attention. Failure to verify your information within 24 hours will result in permanent account suspension.
+
+Sincerely,
+Bank of America Security Team`;
+            
+            document.getElementById('text-content').value = phishingEmail;
+        });
+        
+        document.getElementById('sample-email-2').addEventListener('click', function() {
+            const malwareEmail = `From: invoice@shipping-delivery.com
+To: recipient@example.com
+Subject: Your package delivery invoice #INV-29581
+
+Hello,
+
+Your package is ready for delivery. Please find the invoice attached.
+
+To schedule your delivery, please download and open the attached invoice: invoice_29581.doc
+
+If you have any questions about your delivery, please call our customer service at +1-555-123-4567.
+
+Thank you for your business.
+
+Shipping & Delivery Services`;
+            
+            document.getElementById('text-content').value = malwareEmail;
+        });
+        
+        document.getElementById('sample-email-3').addEventListener('click', function() {
+            const safeEmail = `From: newsletter@company.com
+To: subscriber@example.com
+Subject: Your Weekly Company Newsletter - May 14, 2025
+
+Hello Subscriber,
+
+Here's your weekly newsletter from Company Inc.
+
+# This Week's Highlights
+- New product launch: Widget Pro 2025
+- Company picnic scheduled for June 15
+- Employee of the month: Jane Smith
+
+# Upcoming Events
+- Quarterly meeting: May 20, 2025
+- Training session: May 22, 2025
+
+If you have any questions, please contact us at support@company.com or call 555-123-4567.
+
+Best regards,
+The Company Team`;
+            
+            document.getElementById('text-content').value = safeEmail;
+        });
+        
+        // Function to analyze text content
+        async function analyzeText(textContent) {
+            showAnalysisLoading();
+            
+            try {
+                const response = await fetch('/analyze-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text_content: textContent
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayAnalysisResults(data.analysis);
+                } else {
+                    showAnalysisError(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAnalysisError(error.message || 'Failed to analyze text');
+            }
+        }
+        
+        // Function to analyze email file
+        async function analyzeEmailFile(file) {
+            showAnalysisLoading();
+            
+            try {
+                const formData = new FormData();
+                formData.append('email_file', file);
+                
+                const response = await fetch('/analyze-email-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayAnalysisResults(data.analysis);
+                } else {
+                    showAnalysisError(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAnalysisError(error.message || 'Failed to analyze email file');
+            }
+        }
+        
+        // Function to show analysis loading state
+        function showAnalysisLoading() {
+            document.getElementById('analysis-results-card').classList.remove('d-none');
+            document.getElementById('analysis-loading').classList.remove('d-none');
+            document.getElementById('analysis-results').classList.add('d-none');
+        }
+        
+        // Function to show analysis error
+        function showAnalysisError(message) {
+            document.getElementById('analysis-loading').classList.add('d-none');
+            document.getElementById('analysis-results').classList.remove('d-none');
+            
+            document.getElementById('threat-alert').className = 'alert alert-danger';
+            document.getElementById('threat-alert').innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Error: ${message}
+            `;
+        }
+        
+        // Function to display analysis results
+        function displayAnalysisResults(analysis) {
+            document.getElementById('analysis-loading').classList.add('d-none');
+            document.getElementById('analysis-results').classList.remove('d-none');
+            
+            // Set threat score
+            const threatScore = analysis.threat_score;
+            document.getElementById('threat-score').textContent = threatScore;
+            
+            // Update threat score bar
+            const threatScoreBar = document.getElementById('threat-score-bar');
+            threatScoreBar.style.width = `${threatScore}%`;
+            
+            // Set threat level color and text
+            let threatLevelText, alertClass, barClass;
+            if (threatScore < 20) {
+                threatLevelText = 'Safe';
+                alertClass = 'alert-success';
+                barClass = 'bg-success';
+            } else if (threatScore < 40) {
+                threatLevelText = 'Low Risk';
+                alertClass = 'alert-info';
+                barClass = 'bg-info';
+            } else if (threatScore < 60) {
+                threatLevelText = 'Medium Risk';
+                alertClass = 'alert-warning';
+                barClass = 'bg-warning';
+            } else if (threatScore < 80) {
+                threatLevelText = 'High Risk';
+                alertClass = 'alert-danger';
+                barClass = 'bg-danger';
+            } else {
+                threatLevelText = 'Critical Risk';
+                alertClass = 'alert-danger';
+                barClass = 'bg-danger';
+            }
+            
+            document.getElementById('threat-level-text').textContent = threatLevelText;
+            threatScoreBar.className = `progress-bar ${barClass}`;
+            
+            // Set threat alert
+            document.getElementById('threat-alert').className = `alert ${alertClass}`;
+            document.getElementById('threat-alert').innerHTML = `
+                <i class="fas fa-${threatScore >= 60 ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                <strong>Threat Level: ${threatLevelText}</strong> - ${analysis.summary}
+            `;
+            
+            // Set analysis summary
+            document.getElementById('analysis-summary').innerHTML = `
+                <div class="alert alert-light">
+                    ${analysis.detailed_summary}
+                </div>
+            `;
+            
+            // Set detected threats
+            const threatsContainer = document.getElementById('detected-threats');
+            threatsContainer.innerHTML = '';
+            
+            if (analysis.threats.length === 0) {
+                threatsContainer.innerHTML = `
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        No specific threats detected
+                    </li>
+                `;
+            } else {
+                analysis.threats.forEach(threat => {
+                    threatsContainer.innerHTML += `
+                        <li class="list-group-item">
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                            <strong>${threat.type}:</strong> ${threat.description}
+                        </li>
+                    `;
+                });
+            }
+            
+            // Set recommendations
+            const recommendationsContainer = document.getElementById('recommendations');
+            recommendationsContainer.innerHTML = '';
+            
+            analysis.recommendations.forEach(recommendation => {
+                recommendationsContainer.innerHTML += `
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        ${recommendation}
+                    </li>
+                `;
+            });
+            
+            // Create threat categories chart
+            const categories = analysis.threat_categories;
+            const categoryLabels = Object.keys(categories);
+            const categoryValues = Object.values(categories);
+            
+            const chartColors = [
+                '#dc3545', // red
+                '#fd7e14', // orange
+                '#ffc107', // yellow
+                '#28a745', // green
+                '#17a2b8', // cyan
+                '#6610f2'  // purple
+            ];
+            
+            const ctx = document.getElementById('threat-categories-chart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.threatCategoriesChart) {
+                window.threatCategoriesChart.destroy();
+            }
+            
+            window.threatCategoriesChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Threat Level',
+                        data: categoryValues,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        pointBackgroundColor: 'rgb(255, 99, 132)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(255, 99, 132)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Handle question asking
+        document.getElementById('ask-question-btn').addEventListener('click', askQuestion);
+        document.getElementById('question-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askQuestion();
+            }
+        });
+        
+        async function askQuestion() {
+            const questionInput = document.getElementById('question-input');
+            const question = questionInput.value.trim();
+            const questionAnswer = document.getElementById('question-answer');
+            
+            if (!question) return;
+            
+            // Show loading indicator
+            questionAnswer.innerHTML = `
+                <div class="text-center my-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing your question...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/ask-about-text-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Display the answer
+                questionAnswer.innerHTML = `
+                    <div class="alert alert-primary">
+                        <div class="mb-2"><strong>Q: ${question}</strong></div>
+                        <div>${data.answer}</div>
+                    </div>
+                `;
+                
+                // Clear the input
+                questionInput.value = '';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                questionAnswer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Error: ${error.message || 'Failed to get an answer'}
+                    </div>
+                `;
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -142,7 +142,7 @@ def check_application(args):
 
     # Wait a bit for the application to start
     print("Waiting for the application to start...")
-    time.sleep(5)
+    time.sleep(10)  # Increased wait time to ensure application is fully started
 
     # Construct the SSH command to check if the container is running
     check_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "docker ps | grep netwroksecuritytrial"'
@@ -156,17 +156,33 @@ def check_application(args):
         ip_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "curl -s http://checkip.amazonaws.com"'
         success, ip_output = run_command(ip_command, check=False)
 
-        if success and ip_output.strip():
-            public_ip = ip_output.strip()
-            print(f"\n=== Application Deployed Successfully ===")
-            print(f"You can access the application at:")
-            print(f"http://{public_ip}:8000")
-            print(f"API documentation: http://{public_ip}:8000/docs")
+        public_ip = ip_output.strip() if success and ip_output.strip() else args.host
+
+        # Check if the root endpoint is working
+        root_check_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "curl -s http://localhost:8000/"'
+        success, root_output = run_command(root_check_command, check=False)
+
+        if success and "Network Security API is running" in root_output:
+            print("✅ Root endpoint check passed")
         else:
-            print(f"\n=== Application Deployed Successfully ===")
-            print(f"You can access the application at:")
-            print(f"http://{args.host}:8000")
-            print(f"API documentation: http://{args.host}:8000/docs")
+            print("❌ Root endpoint check failed")
+            print(f"Response: {root_output if success else 'No response'}")
+            print("The application may not be fully initialized yet. Try accessing it manually.")
+
+        # Check if the health endpoint is working
+        health_check_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "curl -s http://localhost:8000/health"'
+        success, health_output = run_command(health_check_command, check=False)
+
+        if success and "healthy" in health_output:
+            print("✅ Health endpoint check passed")
+        else:
+            print("❌ Health endpoint check failed")
+            print(f"Response: {health_output if success else 'No response'}")
+
+        print(f"\n=== Application Deployed Successfully ===")
+        print(f"You can access the application at:")
+        print(f"http://{public_ip}:8000")
+        print(f"API documentation: http://{public_ip}:8000/docs")
 
         return True
     else:
@@ -197,7 +213,9 @@ def main():
         sys.exit(1)
 
     # Check if the application is running
-    check_application(args)
+    if not check_application(args):
+        print("Application check failed.")
+        sys.exit(1)
 
     # Print a message about the enhanced features if using the enhanced version
     if args.enhanced:

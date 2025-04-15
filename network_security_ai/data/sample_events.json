@@ -1,0 +1,74 @@
+[
+  {
+    "event_id": "sample-drift-001",
+    "event_type": "drift_detected",
+    "timestamp": "2023-05-15T10:23:45.123Z",
+    "drift_score": 0.35,
+    "features": ["packet_size", "connection_duration", "protocol_distribution"],
+    "severity": "Medium",
+    "additional_data": {
+      "baseline_period": "2023-05-01 to 2023-05-07",
+      "current_period": "2023-05-08 to 2023-05-14"
+    }
+  },
+  {
+    "event_id": "sample-attack-001",
+    "event_type": "attack_detected",
+    "timestamp": "2023-05-16T14:32:18.456Z",
+    "attack_type": "DDoS",
+    "source_ip": "192.168.1.100",
+    "destination_ip": "10.0.0.5",
+    "protocol": "TCP",
+    "confidence": 0.92,
+    "affected_systems": ["web-server-01", "load-balancer-02"],
+    "additional_data": {
+      "packets_per_second": 15000,
+      "bandwidth_usage": "2.3 Gbps",
+      "attack_signature": "SYN flood pattern"
+    }
+  },
+  {
+    "event_id": "sample-attack-002",
+    "event_type": "attack_detected",
+    "timestamp": "2023-05-17T08:12:33.789Z",
+    "attack_type": "SQL Injection",
+    "source_ip": "192.168.1.105",
+    "destination_ip": "10.0.0.8",
+    "protocol": "HTTP",
+    "confidence": 0.87,
+    "affected_systems": ["web-server-02", "database-01"],
+    "additional_data": {
+      "request_path": "/api/users",
+      "request_method": "POST",
+      "attack_signature": "SQL syntax in parameters"
+    }
+  },
+  {
+    "event_id": "sample-drift-002",
+    "event_type": "drift_detected",
+    "timestamp": "2023-05-18T16:45:22.321Z",
+    "drift_score": 0.28,
+    "features": ["source_ip_distribution", "destination_port_usage"],
+    "severity": "Low",
+    "additional_data": {
+      "baseline_period": "2023-05-04 to 2023-05-10",
+      "current_period": "2023-05-11 to 2023-05-17"
+    }
+  },
+  {
+    "event_id": "sample-attack-003",
+    "event_type": "attack_detected",
+    "timestamp": "2023-05-19T11:28:17.654Z",
+    "attack_type": "Port Scan",
+    "source_ip": "192.168.1.110",
+    "destination_ip": "10.0.0.0/24",
+    "protocol": "TCP",
+    "confidence": 0.95,
+    "affected_systems": ["firewall-01"],
+    "additional_data": {
+      "ports_scanned": "1-1024",
+      "scan_duration": "45 seconds",
+      "attack_signature": "Sequential port probing"
+    }
+  }
+]

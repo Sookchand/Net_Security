@@ -19,6 +19,16 @@ from collections import Counter
 app = FastAPI(title="Network Security API")
 origins = ["*"]
 
+# Root endpoint for health checks
+@app.get("/")
+async def root():
+    return {"status": "healthy", "message": "Network Security API is running"}
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.datetime.now().isoformat()}
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -109,7 +119,7 @@ with open("templates/index.html", "w") as f:
     </head>
     <body>
         <h1>Network Security API</h1>
-        
+
         <div class="container">
             <h2>🔍 Train Model</h2>
             <p>Start the training process for the network security model.</p>
@@ -117,7 +127,7 @@ with open("templates/index.html", "w") as f:
                 <input type="submit" value="Start Training">
             </form>
         </div>
-        
+
         <div class="container">
             <h2>📊 Make Predictions</h2>
             <p>Upload a CSV file to make predictions with advanced visualizations and interactive features.</p>
@@ -128,7 +138,7 @@ with open("templates/index.html", "w") as f:
                 <input type="submit" value="Upload and Predict">
             </form>
         </div>
-        
+
         <div class="container">
             <h2>📚 API Documentation</h2>
             <p>View the API documentation to learn more about the available endpoints.</p>
@@ -148,32 +158,32 @@ with open("static/css/styles.css", "w") as f:
         gap: 20px;
         margin-bottom: 30px;
     }
-    
+
     .card {
         background-color: white;
         border-radius: 8px;
         padding: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    
+
     .filters {
         background-color: #f8f9fa;
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 20px;
     }
-    
+
     .chart-container {
         height: 300px;
         margin-bottom: 20px;
     }
-    
+
     .export-buttons {
         display: flex;
         gap: 10px;
         margin-bottom: 20px;
     }
-    
+
     .export-btn {
         background-color: #2ecc71;
         color: white;
@@ -184,43 +194,43 @@ with open("static/css/styles.css", "w") as f:
         display: flex;
         align-items: center;
     }
-    
+
     .export-btn:hover {
         background-color: #27ae60;
     }
-    
+
     .table-container {
         overflow-x: auto;
     }
-    
+
     table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 10px;
         font-size: 14px;
     }
-    
+
     th, td {
         border: 1px solid #ddd;
         padding: 10px;
         text-align: left;
     }
-    
+
     th {
         background-color: #3498db;
         color: white;
         position: sticky;
         top: 0;
     }
-    
+
     tr:nth-child(even) {
         background-color: #f2f2f2;
     }
-    
+
     tr:hover {
         background-color: #e9f7fe;
     }
-    
+
     .back-button {
         background-color: #3498db;
         color: white;
@@ -233,26 +243,26 @@ with open("static/css/styles.css", "w") as f:
         display: inline-block;
         transition: background-color 0.3s;
     }
-    
+
     .back-button:hover {
         background-color: #2980b9;
     }
-    
+
     .summary-item {
         display: flex;
         align-items: center;
         margin-bottom: 10px;
     }
-    
+
     .summary-label {
         flex: 1;
     }
-    
+
     .summary-value {
         font-weight: bold;
         margin-left: 10px;
     }
-    
+
     .progress-bar {
         height: 8px;
         background-color: #ecf0f1;
@@ -260,12 +270,12 @@ with open("static/css/styles.css", "w") as f:
         overflow: hidden;
         margin-top: 5px;
     }
-    
+
     .progress-value {
         height: 100%;
         border-radius: 4px;
     }
-    
+
     /* Colors for different attack types */
     .normal { background-color: #3498db; }
     .dos { background-color: #e74c3c; }
@@ -344,7 +354,7 @@ with open("static/js/charts.js", "w") as f:
     function filterTable() {
         const filterValue = document.getElementById('attack-filter').value.toLowerCase();
         const tableRows = document.querySelectorAll('#results-table tbody tr');
-        
+
         tableRows.forEach(row => {
             const attackType = row.querySelector('td:last-child').textContent.toLowerCase();
             if (filterValue === 'all' || attackType === filterValue) {
@@ -353,7 +363,7 @@ with open("static/js/charts.js", "w") as f:
                 row.style.display = 'none';
             }
         });
-        
+
         // Update the count of visible rows
         const visibleRows = document.querySelectorAll('#results-table tbody tr:not([style*="display: none"])').length;
         document.getElementById('visible-count').textContent = visibleRows;
@@ -363,7 +373,7 @@ with open("static/js/charts.js", "w") as f:
     function exportCSV() {
         const table = document.getElementById('results-table');
         let csv = [];
-        
+
         // Get headers
         const headers = [];
         const headerCells = table.querySelectorAll('thead th');
@@ -371,7 +381,7 @@ with open("static/js/charts.js", "w") as f:
             headers.push(cell.textContent);
         });
         csv.push(headers.join(','));
-        
+
         // Get visible rows
         const rows = table.querySelectorAll('tbody tr:not([style*="display: none"])');
         rows.forEach(row => {
@@ -387,7 +397,7 @@ with open("static/js/charts.js", "w") as f:
             });
             csv.push(rowData.join(','));
         });
-        
+
         // Create and download the CSV file
         const csvContent = csv.join('\\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -435,7 +445,7 @@ with open("templates/prediction_result.html", "w") as f:
     </head>
     <body>
         <h1>Network Security Prediction Results</h1>
-        
+
         <!-- Export buttons -->
         <div class="export-buttons no-print">
             <button class="export-btn" onclick="exportCSV()">
@@ -445,7 +455,7 @@ with open("templates/prediction_result.html", "w") as f:
                 🖨️ Print Results
             </button>
         </div>
-        
+
         <!-- Dashboard with summary and charts -->
         <div class="dashboard">
             <div class="card">
@@ -454,14 +464,14 @@ with open("templates/prediction_result.html", "w") as f:
                     {{ summary_html|safe }}
                 </div>
             </div>
-            
+
             <div class="card">
                 <h2>Attack Distribution</h2>
                 <div class="chart-container">
                     <canvas id="pie-chart"></canvas>
                 </div>
             </div>
-            
+
             <div class="card">
                 <h2>Attack Counts</h2>
                 <div class="chart-container">
@@ -469,7 +479,7 @@ with open("templates/prediction_result.html", "w") as f:
                 </div>
             </div>
         </div>
-        
+
         <!-- Filters -->
         <div class="filters no-print">
             <h2>Filter Results</h2>
@@ -484,7 +494,7 @@ with open("templates/prediction_result.html", "w") as f:
                 </span>
             </div>
         </div>
-        
+
         <!-- Results table -->
         <div class="card">
             <h2>Detailed Results</h2>
@@ -501,23 +511,23 @@ with open("templates/prediction_result.html", "w") as f:
                 </table>
             </div>
         </div>
-        
+
         <a href="/" class="back-button no-print">Back to Home</a>
-        
+
         <script>
             // Data for charts
             const labels = {{ chart_labels|safe }};
             const data = {{ chart_data|safe }};
             const colors = {{ chart_colors|safe }};
-            
+
             // Create charts when the page loads
             document.addEventListener('DOMContentLoaded', function() {
                 const pieCtx = document.getElementById('pie-chart').getContext('2d');
                 const barCtx = document.getElementById('bar-chart').getContext('2d');
-                
+
                 createPieChart(pieCtx, labels, data, colors);
                 createBarChart(barCtx, labels, data, colors);
-                
+
                 // Initialize the visible count
                 document.getElementById('visible-count').textContent = {{ total_records }};
             });
@@ -567,38 +577,38 @@ async def predict_route(request: Request, file: UploadFile = File(...)):
         content = await file.read()
         content_str = content.decode('utf-8')
         csv_reader = csv.reader(StringIO(content_str))
-        
+
         # Convert to list of lists
         data = list(csv_reader)
         headers = data[0] if data else []
         rows = data[1:20] if len(data) > 1 else []  # Get first 20 rows for demonstration
-        
+
         # Add prediction column
         attack_types = ["Normal", "DoS", "Probe", "R2L", "U2R"]
         attack_colors = ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6"]
-        
+
         if headers:
             headers.append("predicted_attack")
-        
+
         for row in rows:
             row.append(random.choice(attack_types))
-        
+
         # Count attack types for summary and charts
         all_predictions = [row[-1] for row in rows]
         prediction_counts = Counter(all_predictions)
-        
+
         # Prepare data for charts
         chart_labels = list(prediction_counts.keys())
         chart_data = [prediction_counts[label] for label in chart_labels]
-        
+
         # Map colors to attack types
         color_map = dict(zip(attack_types, attack_colors))
         chart_colors = [color_map.get(label, "#999999") for label in chart_labels]
-        
+
         # Create summary HTML
         total_records = len(rows)
         summary_html = f"<p><strong>Total records analyzed:</strong> {total_records}</p>"
-        
+
         for attack_type, count in prediction_counts.items():
             percentage = (count / total_records) * 100
             color_class = attack_type.lower()
@@ -611,17 +621,17 @@ async def predict_route(request: Request, file: UploadFile = File(...)):
                 <div class="progress-value {color_class}" style="width: {percentage}%"></div>
             </div>
             """
-        
+
         # Create filter options
         filter_options = ""
         for attack_type in sorted(prediction_counts.keys()):
             filter_options += f'<option value="{attack_type.lower()}">{attack_type}</option>'
-        
+
         # Create table headers
         table_headers = ""
         for header in headers:
             table_headers += f"<th>{header}</th>"
-        
+
         # Create table rows
         table_rows = ""
         for row in rows:
@@ -630,7 +640,7 @@ async def predict_route(request: Request, file: UploadFile = File(...)):
             for cell in row:
                 table_rows += f"<td>{cell}</td>"
             table_rows += "</tr>"
-        
+
         # Return the enhanced template
         return templates.TemplateResponse(
             "prediction_result.html",
@@ -646,7 +656,7 @@ async def predict_route(request: Request, file: UploadFile = File(...)):
                 "chart_colors": json.dumps(chart_colors)
             }
         )
-        
+
     except Exception as e:
         return JSONResponse(
             status_code=500,
