@@ -176,12 +176,12 @@ jobs:
 
           while [ $attempt -le $max_attempts ] && [ "$success" = false ]; do
             echo "Attempt $attempt of $max_attempts..."
-            # Use -I to get headers and check for 307 redirect
-            response=$(curl -s -I --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
-            echo "Response headers: $response"
+            # Use GET request instead of HEAD
+            response=$(curl -s --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
+            echo "Response: $response"
 
-            # Check for either a 200 OK or a 307 redirect (both indicate the app is running)
-            if [[ "$response" == *"200 OK"* ]] || [[ "$response" == *"307 Temporary Redirect"* ]]; then
+            # Check if the response contains expected content
+            if [[ "$response" == *"healthy"* ]] || [[ "$response" == *"Network Security API is running"* ]]; then
               echo "✅ Application root endpoint is working (received valid HTTP response)"
               success=true
               break

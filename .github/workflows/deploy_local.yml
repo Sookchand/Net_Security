@@ -48,12 +48,12 @@ jobs:
           max_attempts=5
           attempt=1
           success=false
-          
+
           while [ $attempt -le $max_attempts ] && [ "$success" = false ]; do
             echo "Attempt $attempt of $max_attempts..."
             response=$(curl -s --connect-timeout 5 http://localhost:8000/health || echo "Connection failed")
             echo "Response: $response"
-          
+
             if [[ "$response" == *"healthy"* ]]; then
               echo "✅ Application is healthy"
               success=true
@@ -67,7 +67,7 @@ jobs:
               attempt=$((attempt+1))
             fi
           done
-          
+
           if [ "$success" = false ]; then
             echo "❌ Application health check failed after $max_attempts attempts"
             echo "Checking container logs:"
@@ -81,15 +81,15 @@ jobs:
           max_attempts=5
           attempt=1
           success=false
-          
+
           while [ $attempt -le $max_attempts ] && [ "$success" = false ]; do
             echo "Attempt $attempt of $max_attempts..."
-            # Use -I to get headers and check for 307 redirect
-            response=$(curl -s -I --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
-            echo "Response headers: $response"
-            
-            # Check for either a 200 OK or a 307 redirect (both indicate the app is running)
-            if [[ "$response" == *"200 OK"* ]] || [[ "$response" == *"307 Temporary Redirect"* ]]; then
+            # Use GET request instead of HEAD
+            response=$(curl -s --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
+            echo "Response: $response"
+
+            # Check if the response contains expected content
+            if [[ "$response" == *"healthy"* ]] || [[ "$response" == *"Network Security API is running"* ]]; then
               echo "✅ Application root endpoint is working (received valid HTTP response)"
               success=true
               break
@@ -102,7 +102,7 @@ jobs:
               attempt=$((attempt+1))
             fi
           done
-          
+
           if [ "$success" = false ]; then
             echo "❌ Application root endpoint check failed after $max_attempts attempts"
             echo "Checking container logs:"
