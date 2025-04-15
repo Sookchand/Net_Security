@@ -1,0 +1,118 @@
+name: Deploy Local No-Auth Version
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'enhanced_no_auth_app.py'
+      - 'Dockerfile.no_auth'
+      - '.github/workflows/deploy_local.yml'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  deploy-local:
+    name: Deploy Local No-Auth Version
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Stop existing container
+        run: |
+          docker rm -f netwroksecuritytrial || true
+
+      - name: Build Docker image
+        run: |
+          docker build -t netwroksecuritytrial:latest -f Dockerfile.no_auth .
+
+      - name: Run container
+        run: |
+          docker run -d \
+            --name netwroksecuritytrial \
+            --restart always \
+            -p 8000:8000 \
+            netwroksecuritytrial:latest
+
+          # Verify container is running
+          docker ps | grep netwroksecuritytrial
+
+      - name: Wait for application to start
+        run: |
+          echo "Waiting for application to start..."
+          sleep 15
+
+      - name: Test application health endpoint
+        run: |
+          # Try multiple times in case the application is still starting up
+          max_attempts=5
+          attempt=1
+          success=false
+          
+          while [ $attempt -le $max_attempts ] && [ "$success" = false ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            response=$(curl -s --connect-timeout 5 http://localhost:8000/health || echo "Connection failed")
+            echo "Response: $response"
+          
+            if [[ "$response" == *"healthy"* ]]; then
+              echo "✅ Application is healthy"
+              success=true
+              break
+            else
+              echo "⚠️ Health check not successful yet"
+              if [ $attempt -lt $max_attempts ]; then
+                echo "Waiting 5 seconds before next attempt..."
+                sleep 5
+              fi
+              attempt=$((attempt+1))
+            fi
+          done
+          
+          if [ "$success" = false ]; then
+            echo "❌ Application health check failed after $max_attempts attempts"
+            echo "Checking container logs:"
+            docker logs netwroksecuritytrial
+            exit 1
+          fi
+
+      - name: Test application root endpoint
+        run: |
+          # Try multiple times in case the application is still starting up
+          max_attempts=5
+          attempt=1
+          success=false
+          
+          while [ $attempt -le $max_attempts ] && [ "$success" = false ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            # Use -I to get headers and check for 307 redirect
+            response=$(curl -s -I --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
+            echo "Response headers: $response"
+            
+            # Check for either a 200 OK or a 307 redirect (both indicate the app is running)
+            if [[ "$response" == *"200 OK"* ]] || [[ "$response" == *"307 Temporary Redirect"* ]]; then
+              echo "✅ Application root endpoint is working (received valid HTTP response)"
+              success=true
+              break
+            else
+              echo "⚠️ Root endpoint check not successful yet"
+              if [ $attempt -lt $max_attempts ]; then
+                echo "Waiting 5 seconds before next attempt..."
+                sleep 5
+              fi
+              attempt=$((attempt+1))
+            fi
+          done
+          
+          if [ "$success" = false ]; then
+            echo "❌ Application root endpoint check failed after $max_attempts attempts"
+            echo "Checking container logs:"
+            docker logs netwroksecuritytrial
+            exit 1
+          fi
+
+      - name: Deployment successful
+        run: |
+          PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || echo "localhost")
+          echo "✅ Deployment successful!"
+          echo "Application is available at: http://$PUBLIC_IP:8000"
+          echo "API documentation: http://$PUBLIC_IP:8000/docs"
