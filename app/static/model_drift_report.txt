@@ -1,0 +1,34 @@
+====================================================
+               MODEL DRIFT REPORT
+====================================================
+Report generated: 2025-04-15T14:30:00.000000
+Baseline model: final_model/model.pkl
+Current model: Artifacts/04_15_2025_11_30_00/model_trainer/trained_model/model.pkl
+====================================================
+
+PERFORMANCE METRICS COMPARISON:
+--------------------------------------------------
+Metric          Baseline   Current    Difference  Status
+--------------------------------------------------
+Accuracy        0.9200     0.9000     -0.0200     Stable
+Precision       0.8900     0.8600     -0.0300     Stable
+Recall          0.8700     0.8500     -0.0200     Stable
+F1              0.8800     0.8500     -0.0300     Stable
+Auc             0.9500     0.9400     -0.0100     Stable
+--------------------------------------------------
+
+DRIFT SUMMARY:
+--------------------------------------------------
+WARNING: SIGNIFICANT MODEL DRIFT DETECTED
+
+The following metrics show significant degradation:
+  None
+--------------------------------------------------
+
+RECOMMENDATIONS:
+--------------------------------------------------
+1. Investigate the cause of model performance degradation
+2. Consider retraining the model with more recent data
+3. Review feature engineering and preprocessing steps
+4. Evaluate if the data distribution has changed significantly
+--------------------------------------------------

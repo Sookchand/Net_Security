@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Network Security AI Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Network Security AI Dashboard
+                </h2>
+                <p class="card-text">
+                    Welcome to the Network Security AI Platform. This dashboard provides tools for analyzing network traffic and detecting security threats.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>
+                    Network Traffic Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Upload network traffic data to detect potential security threats.</p>
+                <div class="d-grid gap-2">
+                    <a href="/predict" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Network Traffic
+                    </a>
+                </div>
+                <hr>
+                <h6>Features:</h6>
+                <ul>
+                    <li>Detect various attack types (DoS, Probe, R2L, U2R)</li>
+                    <li>Interactive visualizations of attack distributions</li>
+                    <li>Detailed analysis with AI-powered insights</li>
+                    <li>Export and print functionality</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-envelope me-2"></i>
+                    Email & Text Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Analyze emails and text content for potential security threats.</p>
+                <div class="d-grid gap-2">
+                    <a href="/text-analysis" class="btn btn-success">
+                        <i class="fas fa-envelope me-2"></i>
+                        Analyze Email/Text
+                    </a>
+                </div>
+                <hr>
+                <h6>Features:</h6>
+                <ul>
+                    <li>Detect phishing attempts and scams</li>
+                    <li>Identify potential malware indicators</li>
+                    <li>Assess social engineering tactics</li>
+                    <li>Get security recommendations</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Sample Security Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Attack Distribution</h6>
+                        <canvas id="sample-chart" height="250"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Security Insights</h6>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This is a sample visualization. Upload your data to see real analysis.
+                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Normal traffic: 70%
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                DoS attacks: 15%
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                Probe attacks: 10%
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-exclamation text-danger me-2"></i>
+                                Other attacks: 5%
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sample chart
+        const ctx = document.getElementById('sample-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Normal', 'DoS', 'Probe', 'R2L', 'U2R'],
+                datasets: [{
+                    data: [70, 15, 10, 3, 2],
+                    backgroundColor: [
+                        '#28a745', // green
+                        '#dc3545', // red
+                        '#ffc107', // yellow
+                        '#6f42c1', // purple
+                        '#fd7e14'  // orange
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

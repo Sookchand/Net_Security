@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}System Architecture{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-project-diagram me-2"></i>
+                    System Architecture
+                </h2>
+                <p class="card-text">
+                    Overview of the Network Security AI Platform architecture and components.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-sitemap me-2"></i>
+                    High-Level Architecture
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <canvas id="architecture-diagram" height="400"></canvas>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Key Components</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-database text-primary me-2"></i>
+                                <strong>Data Ingestion</strong>: Collects and processes network traffic data
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <strong>Data Validation</strong>: Ensures data quality and consistency
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-random text-info me-2"></i>
+                                <strong>Data Transformation</strong>: Prepares data for model training
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-brain text-warning me-2"></i>
+                                <strong>Model Training</strong>: Trains machine learning models
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-search text-danger me-2"></i>
+                                <strong>Prediction</strong>: Detects security threats in network traffic
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Technology Stack</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fab fa-python text-primary me-2"></i>
+                                <strong>Python</strong>: Core programming language
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-server text-success me-2"></i>
+                                <strong>FastAPI</strong>: Web framework for APIs
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-brain text-info me-2"></i>
+                                <strong>Scikit-learn</strong>: Machine learning library
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-table text-warning me-2"></i>
+                                <strong>Pandas</strong>: Data manipulation library
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-chart-bar text-danger me-2"></i>
+                                <strong>Chart.js</strong>: Visualization library
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Training Pipeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <canvas id="training-pipeline" height="200"></canvas>
+                </div>
+                <h6>Pipeline Stages</h6>
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Ingestion</div>
+                            Collects data from various sources and creates training/testing datasets
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Validation</div>
+                            Validates data schema and quality, identifies drift
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Transformation</div>
+                            Applies preprocessing, feature engineering, and normalization
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Model Training</div>
+                            Trains multiple models and selects the best performer
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Model Evaluation</div>
+                            Evaluates model performance using various metrics
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-search me-2"></i>
+                    Prediction Pipeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <canvas id="prediction-pipeline" height="200"></canvas>
+                </div>
+                <h6>Pipeline Stages</h6>
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Loading</div>
+                            Loads network traffic data from files or directories
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Data Preprocessing</div>
+                            Applies the same transformations used during training
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Model Prediction</div>
+                            Uses the trained model to detect security threats
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Results Analysis</div>
+                            Analyzes prediction results and generates insights
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Visualization</div>
+                            Creates interactive dashboards and reports
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // High-level architecture diagram
+        const architectureCtx = document.getElementById('architecture-diagram').getContext('2d');
+        new Chart(architectureCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Data Ingestion', 'Data Validation', 'Data Transformation', 'Model Training', 'Prediction', 'Visualization'],
+                datasets: [{
+                    label: 'Component Complexity',
+                    data: [70, 60, 80, 90, 75, 65],
+                    backgroundColor: [
+                        '#3498db',
+                        '#2ecc71',
+                        '#f39c12',
+                        '#9b59b6',
+                        '#e74c3c',
+                        '#1abc9c'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Network Security AI Platform Components'
+                    }
+                }
+            }
+        });
+        
+        // Training pipeline diagram
+        const trainingCtx = document.getElementById('training-pipeline').getContext('2d');
+        new Chart(trainingCtx, {
+            type: 'line',
+            data: {
+                labels: ['Data Ingestion', 'Data Validation', 'Data Transformation', 'Model Training', 'Model Evaluation'],
+                datasets: [{
+                    label: 'Process Flow',
+                    data: [10, 30, 50, 80, 100],
+                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                    borderColor: '#2ecc71',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#2ecc71',
+                    pointBorderColor: '#fff',
+                    pointRadius: 6,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Progress'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Prediction pipeline diagram
+        const predictionCtx = document.getElementById('prediction-pipeline').getContext('2d');
+        new Chart(predictionCtx, {
+            type: 'line',
+            data: {
+                labels: ['Data Loading', 'Data Preprocessing', 'Model Prediction', 'Results Analysis', 'Visualization'],
+                datasets: [{
+                    label: 'Process Flow',
+                    data: [10, 30, 60, 80, 100],
+                    backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                    borderColor: '#e74c3c',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#e74c3c',
+                    pointBorderColor: '#fff',
+                    pointRadius: 6,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Progress'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

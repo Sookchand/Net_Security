@@ -1,0 +1,20 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Copy application files
+COPY enhanced_app_with_templates.py app.py
+COPY requirements.templates.txt requirements.txt
+COPY sample_network_data.csv sample_network_data.csv
+
+# Copy templates and static files
+COPY app/ app/
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expose port
+EXPOSE 8000
+
+# Run the application
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -33,7 +33,12 @@ python deploy.py --key my-key-pair.pem --host ec2-3-87-239-199.compute-1.amazona
 ```
 """
 (venv)
-python deploy.py --key my-key-pair.pem --host ec2-3-87-239-199.compute-1.amazonaws.com --enhanced
+python deploy.py --key my-key-pair.pem --host ec2-3-87-239-199.compute-1.amazonaws.com --templates
+used to share online or deply online.
+
+deploy locally
+uvicorn enhanced_app_with_templates:app --reload
+
 """
 
 The `--enhanced` flag tells the script to deploy the enhanced version.

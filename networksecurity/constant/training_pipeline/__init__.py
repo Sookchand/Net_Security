@@ -71,3 +71,11 @@ MODEL_TRAINER_EXPECTED_SCORE: float = 0.6
 MODEL_TRAINER_OVER_FIITING_UNDER_FITTING_THRESHOLD: float = 0.05
 
 TRAINING_BUCKET_NAME = "netwroksecuritytrial"
+
+"""
+Model Drift related constants start with MODEL_DRIFT VAR NAME
+"""
+MODEL_DRIFT_DIR_NAME: str = "model_drift"
+MODEL_DRIFT_REPORT_DIR: str = "reports"
+MODEL_DRIFT_VISUALIZATION_DIR: str = "visualizations"
+MODEL_DRIFT_THRESHOLD: float = 0.05

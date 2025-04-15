@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Drift Reports{% endblock %}
+
+{% block head %}
+<style>
+    .text-report {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        overflow-x: auto;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd;
+    }
+    .tab-content {
+        padding: 20px 0;
+    }
+    .drift-status-stable {
+        color: #28a745;
+    }
+    .drift-status-improved {
+        color: #17a2b8;
+    }
+    .drift-status-degraded {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Drift Reports
+                </h2>
+                <p class="card-text">
+                    Monitor and analyze changes in data distribution and model performance over time to detect potential drift.
+                </p>
+                
+                <ul class="nav nav-pills mb-3" id="drift-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="data-drift-tab" data-bs-toggle="pill" data-bs-target="#data-drift" type="button" role="tab" aria-controls="data-drift" aria-selected="true">
+                            <i class="fas fa-database me-2"></i>
+                            Data Drift
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="model-drift-tab" data-bs-toggle="pill" data-bs-target="#model-drift" type="button" role="tab" aria-controls="model-drift" aria-selected="false">
+                            <i class="fas fa-brain me-2"></i>
+                            Model Drift
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content" id="drift-tabs-content">
+    <!-- Data Drift Tab -->
+    <div class="tab-pane fade show active" id="data-drift" role="tabpanel" aria-labelledby="data-drift-tab">
+        {% if data_drift_report %}
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header {% if data_drift_report.drift_detected %}bg-danger{% else %}bg-success{% endif %} text-white">
+                        <h5 class="mb-0">
+                            <i class="fas {% if data_drift_report.drift_detected %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} me-2"></i>
+                            Data Drift Status: {% if data_drift_report.drift_detected %}Significant Drift Detected{% else %}No Significant Drift{% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p><strong>Report Generated:</strong> {{ data_drift_report.timestamp }}</p>
+                                <p><strong>Drift Threshold:</strong> {{ data_drift_report.threshold }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert {% if data_drift_report.drift_detected %}alert-danger{% else %}alert-success{% endif %}">
+                                    <i class="fas {% if data_drift_report.drift_detected %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} me-2"></i>
+                                    {% if data_drift_report.drift_detected %}
+                                    <strong>Warning:</strong> Significant data distribution changes detected. Review the features below for details.
+                                    {% else %}
+                                    <strong>Good news:</strong> No significant data distribution changes detected. The data is stable.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Data Drift Text Report</h6>
+                                        <pre class="text-report">{{ data_drift_text }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No data drift report is available. Run a data drift analysis to generate a report.
+                </div>
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <h4 class="mb-4">Generate Data Drift Report</h4>
+                        <p>Compare your baseline data with the current data to detect distribution changes.</p>
+                        <button id="generate-data-drift-report" class="btn btn-primary">
+                            <i class="fas fa-sync me-2"></i>
+                            Generate Data Drift Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Model Drift Tab -->
+    <div class="tab-pane fade" id="model-drift" role="tabpanel" aria-labelledby="model-drift-tab">
+        {% if model_drift_report %}
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header {% if model_drift_report.drift_detected %}bg-danger{% else %}bg-success{% endif %} text-white">
+                        <h5 class="mb-0">
+                            <i class="fas {% if model_drift_report.drift_detected %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} me-2"></i>
+                            Model Drift Status: {% if model_drift_report.drift_detected %}Significant Drift Detected{% else %}No Significant Drift{% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p><strong>Report Generated:</strong> {{ model_drift_report.timestamp }}</p>
+                                <p><strong>Baseline Model:</strong> {{ model_drift_report.baseline_model_path }}</p>
+                                <p><strong>Current Model:</strong> {{ model_drift_report.current_model_path }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert {% if model_drift_report.drift_detected %}alert-danger{% else %}alert-success{% endif %}">
+                                    <i class="fas {% if model_drift_report.drift_detected %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} me-2"></i>
+                                    {% if model_drift_report.drift_detected %}
+                                    <strong>Warning:</strong> Significant model performance degradation detected. Review the metrics below for details.
+                                    {% else %}
+                                    <strong>Good news:</strong> No significant model performance degradation detected. The model is performing as expected.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Model Drift Text Report</h6>
+                                        <pre class="text-report">{{ model_drift_text }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No model drift report is available. Run a model drift analysis to generate a report.
+                </div>
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <h4 class="mb-4">Generate Model Drift Report</h4>
+                        <p>Compare your baseline model with the current model to detect performance drift.</p>
+                        <button id="generate-model-drift-report" class="btn btn-primary">
+                            <i class="fas fa-sync me-2"></i>
+                            Generate Model Drift Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle generate data drift report button
+        const generateDataDriftBtn = document.getElementById('generate-data-drift-report');
+        if (generateDataDriftBtn) {
+            generateDataDriftBtn.addEventListener('click', async function() {
+                try {
+                    generateDataDriftBtn.disabled = true;
+                    generateDataDriftBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+                    
+                    const response = await fetch('/api/data-drift/generate', {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error generating data drift report: ${errorData.detail || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while generating the data drift report.');
+                } finally {
+                    generateDataDriftBtn.disabled = false;
+                    generateDataDriftBtn.innerHTML = '<i class="fas fa-sync me-2"></i> Generate Data Drift Report';
+                }
+            });
+        }
+        
+        // Handle generate model drift report button
+        const generateModelDriftBtn = document.getElementById('generate-model-drift-report');
+        if (generateModelDriftBtn) {
+            generateModelDriftBtn.addEventListener('click', async function() {
+                try {
+                    generateModelDriftBtn.disabled = true;
+                    generateModelDriftBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+                    
+                    const response = await fetch('/api/model-drift/generate', {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error generating model drift report: ${errorData.detail || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while generating the model drift report.');
+                } finally {
+                    generateModelDriftBtn.disabled = false;
+                    generateModelDriftBtn.innerHTML = '<i class="fas fa-sync me-2"></i> Generate Model Drift Report';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

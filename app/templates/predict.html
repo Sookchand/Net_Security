@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Network Traffic Analysis{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-search me-2"></i>
+                    Network Traffic Analysis
+                </h2>
+                <p class="card-text">
+                    Upload network traffic data to detect potential security threats.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>
+                    Upload Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="prediction-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select CSV file</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv">
+                        <div class="form-text">Upload a CSV file with network traffic data.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Data
+                    </button>
+                </form>
+                
+                <div id="loading" class="text-center mt-3 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Data Format
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>The CSV file should contain network traffic data with the following columns:</p>
+                <ul>
+                    <li><strong>duration</strong>: Connection duration</li>
+                    <li><strong>protocol_type</strong>: Protocol used (e.g., tcp, udp, icmp)</li>
+                    <li><strong>service</strong>: Service on destination (e.g., http, ftp, telnet)</li>
+                    <li><strong>flag</strong>: Status flag of the connection</li>
+                    <li><strong>src_bytes</strong>: Bytes sent from source to destination</li>
+                    <li><strong>dst_bytes</strong>: Bytes sent from destination to source</li>
+                    <li>... and other network traffic features</li>
+                </ul>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Don't have a CSV file? Use our sample data below.
+                </div>
+                <button id="use-sample-data" class="btn btn-outline-primary">
+                    <i class="fas fa-file-csv me-2"></i>
+                    Use Sample Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="results-container" class="d-none">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Analysis Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Total Records</h6>
+                                    <div class="display-4 mb-2" id="total-records">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Potential Attacks</h6>
+                                    <div class="display-4 mb-2 text-danger" id="total-attacks">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Threat Score</h6>
+                                    <div class="display-4 mb-2" id="threat-score">0</div>
+                                    <div class="progress">
+                                        <div id="threat-score-bar" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>Attack Distribution</h6>
+                            <canvas id="attack-distribution-chart" height="250"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Analysis Summary</h6>
+                            <div class="alert alert-info" id="summary">
+                                No data analyzed yet.
+                            </div>
+                            <h6>Recommendations</h6>
+                            <ul class="list-group" id="recommendations">
+                                <!-- Will be filled dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6>Data Preview</h6>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover" id="data-preview">
+                                    <thead>
+                                        <tr>
+                                            <!-- Will be filled dynamically -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Will be filled dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-end">
+                                <button id="export-csv" class="btn btn-outline-primary me-2">
+                                    <i class="fas fa-file-csv me-2"></i>
+                                    Export CSV
+                                </button>
+                                <button id="print-report" class="btn btn-outline-secondary">
+                                    <i class="fas fa-print me-2"></i>
+                                    Print Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const predictionForm = document.getElementById('prediction-form');
+        const useSampleDataBtn = document.getElementById('use-sample-data');
+        const loadingIndicator = document.getElementById('loading');
+        const resultsContainer = document.getElementById('results-container');
+        const exportCsvBtn = document.getElementById('export-csv');
+        const printReportBtn = document.getElementById('print-report');
+        
+        // Handle form submission
+        predictionForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading indicator
+            loadingIndicator.classList.remove('d-none');
+            resultsContainer.classList.add('d-none');
+            
+            // Get form data
+            const formData = new FormData(predictionForm);
+            
+            try {
+                // Send request to API
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading indicator
+                loadingIndicator.classList.add('d-none');
+                
+                // Display results
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingIndicator.classList.add('d-none');
+                alert('An error occurred while analyzing the data. Please try again.');
+            }
+        });
+        
+        // Handle sample data button
+        useSampleDataBtn.addEventListener('click', async function() {
+            // Show loading indicator
+            loadingIndicator.classList.remove('d-none');
+            resultsContainer.classList.add('d-none');
+            
+            try {
+                // Send request to API
+                const response = await fetch('/predict-sample');
+                const data = await response.json();
+                
+                // Hide loading indicator
+                loadingIndicator.classList.add('d-none');
+                
+                // Display results
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingIndicator.classList.add('d-none');
+                alert('An error occurred while analyzing the sample data. Please try again.');
+            }
+        });
+        
+        // Handle export CSV button
+        exportCsvBtn.addEventListener('click', function() {
+            // This would normally download the CSV file
+            alert('CSV export functionality would be implemented here.');
+        });
+        
+        // Handle print report button
+        printReportBtn.addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Function to display results
+        function displayResults(data) {
+            // Show results container
+            resultsContainer.classList.remove('d-none');
+            
+            // Update statistics
+            document.getElementById('total-records').textContent = data.prediction_summary.total_records;
+            document.getElementById('total-attacks').textContent = data.prediction_summary.total_attacks;
+            
+            const threatScore = data.prediction_summary.threat_score;
+            document.getElementById('threat-score').textContent = threatScore;
+            
+            // Update threat score bar
+            const threatScoreBar = document.getElementById('threat-score-bar');
+            threatScoreBar.style.width = `${threatScore}%`;
+            
+            // Set threat level color
+            if (threatScore < 20) {
+                threatScoreBar.className = 'progress-bar bg-success';
+            } else if (threatScore < 40) {
+                threatScoreBar.className = 'progress-bar bg-info';
+            } else if (threatScore < 60) {
+                threatScoreBar.className = 'progress-bar bg-warning';
+            } else {
+                threatScoreBar.className = 'progress-bar bg-danger';
+            }
+            
+            // Update summary
+            document.getElementById('summary').textContent = data.analysis.summary;
+            
+            // Update recommendations
+            const recommendationsContainer = document.getElementById('recommendations');
+            recommendationsContainer.innerHTML = '';
+            
+            data.analysis.recommendations.forEach(recommendation => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>${recommendation}`;
+                recommendationsContainer.appendChild(li);
+            });
+            
+            // Create attack distribution chart
+            const attackCounts = data.prediction_summary.attack_distribution;
+            const labels = Object.keys(attackCounts);
+            const counts = Object.values(attackCounts);
+            
+            // Colors for different attack types
+            const colors = {
+                'Normal': '#28a745',
+                'DoS': '#dc3545',
+                'Probe': '#ffc107',
+                'R2L': '#6f42c1',
+                'U2R': '#fd7e14'
+            };
+            
+            // Create background colors array
+            const backgroundColors = labels.map(label => colors[label] || '#6c757d');
+            
+            // Create chart
+            const ctx = document.getElementById('attack-distribution-chart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.attackChart) {
+                window.attackChart.destroy();
+            }
+            
+            window.attackChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Update data preview
+            updateDataPreview(data.data_preview);
+        }
+        
+        // Function to update data preview
+        function updateDataPreview(dataPreview) {
+            const table = document.getElementById('data-preview');
+            const thead = table.querySelector('thead tr');
+            const tbody = table.querySelector('tbody');
+            
+            // Clear existing content
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            // No data to display
+            if (!dataPreview || dataPreview.length === 0) {
+                return;
+            }
+            
+            // Add headers
+            const headers = Object.keys(dataPreview[0]);
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                thead.appendChild(th);
+            });
+            
+            // Add rows
+            dataPreview.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header];
+                    
+                    // Highlight attack cells
+                    if (header === 'predicted_attack' && row[header] !== 'Normal') {
+                        td.className = 'text-danger fw-bold';
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+        }
+    });
+</script>
+{% endblock %}

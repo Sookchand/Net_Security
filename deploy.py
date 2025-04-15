@@ -29,6 +29,20 @@ ENHANCED_FILES = [
     "sample_network_data.csv"
 ]
 
+# Files to upload - Templates version
+TEMPLATES_FILES = [
+    "enhanced_app_with_templates.py",
+    "Dockerfile.templates",
+    "requirements.templates.txt",
+    "deploy_templates.sh",
+    "sample_network_data.csv"
+]
+
+# Directory to upload - Templates version
+TEMPLATES_DIRS = [
+    "app"
+]
+
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Deploy Network Security API to EC2")
@@ -38,6 +52,7 @@ def parse_arguments():
     parser.add_argument("--port", "-p", default=22, type=int, help="SSH port (default: 22)")
     parser.add_argument("--skip-upload", action="store_true", help="Skip file upload and only run deployment")
     parser.add_argument("--enhanced", "-e", action="store_true", help="Deploy the enhanced version with advanced visualizations")
+    parser.add_argument("--templates", "-t", action="store_true", help="Deploy the templates version with full web interface")
     return parser.parse_args()
 
 def check_key_file(key_path):
@@ -85,10 +100,18 @@ def upload_files(args):
     """Upload files to the EC2 instance."""
     print("\n=== Uploading Files ===")
 
-    # Determine which files to upload based on the --enhanced flag
-    files_to_upload = ENHANCED_FILES if args.enhanced else BASIC_FILES
-    print(f"Using {'enhanced' if args.enhanced else 'basic'} version of the application")
+    # Determine which files to upload based on the flags
+    if args.templates:
+        files_to_upload = TEMPLATES_FILES
+        print("Using templates version of the application with full web interface")
+    elif args.enhanced:
+        files_to_upload = ENHANCED_FILES
+        print("Using enhanced version of the application")
+    else:
+        files_to_upload = BASIC_FILES
+        print("Using basic version of the application")
 
+    # Upload individual files
     for file_name in files_to_upload:
         if not os.path.exists(file_name):
             print(f"Warning: File {file_name} not found, skipping...")
@@ -105,14 +128,44 @@ def upload_files(args):
             print(f"Failed to upload {file_name}: {output}")
             return False
 
+    # Upload directories for templates version
+    if args.templates:
+        for dir_name in TEMPLATES_DIRS:
+            if not os.path.exists(dir_name):
+                print(f"Warning: Directory {dir_name} not found, skipping...")
+                continue
+
+            # Create the directory on the remote server
+            mkdir_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "mkdir -p ~/{dir_name}"'
+            success, output = run_command(mkdir_command)
+            if not success:
+                print(f"Failed to create directory {dir_name} on remote server: {output}")
+                return False
+
+            # Construct the scp command to recursively copy the directory
+            scp_command = f'scp -i "{args.key}" -P {args.port} -r {dir_name}/* {args.user}@{args.host}:~/{dir_name}/'
+
+            # Run the command
+            success, output = run_command(scp_command)
+            if success:
+                print(f"Successfully uploaded directory {dir_name}")
+            else:
+                print(f"Failed to upload directory {dir_name}: {output}")
+                return False
+
     return True
 
 def deploy_application(args):
     """Deploy the application on the EC2 instance."""
     print("\n=== Deploying Application ===")
 
-    # Determine which deployment script to use based on the --enhanced flag
-    deploy_script = "deploy_enhanced.sh" if args.enhanced else "deploy_very_simple.sh"
+    # Determine which deployment script to use based on the flags
+    if args.templates:
+        deploy_script = "deploy_templates.sh"
+    elif args.enhanced:
+        deploy_script = "deploy_enhanced.sh"
+    else:
+        deploy_script = "deploy_very_simple.sh"
 
     # Construct the SSH command to make the deployment script executable
     chmod_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "chmod +x ~/{deploy_script}"'
@@ -162,12 +215,22 @@ def check_application(args):
         root_check_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "curl -s http://localhost:8000/"'
         success, root_output = run_command(root_check_command, check=False)
 
-        if success and "Network Security API is running" in root_output:
-            print("✅ Root endpoint check passed")
+        if args.templates:
+            # For templates version, check for HTML content
+            if success and ("<html" in root_output or "Network Security AI" in root_output):
+                print("✅ Root endpoint check passed")
+            else:
+                print("❌ Root endpoint check failed")
+                print(f"Response: {root_output if success else 'No response'}")
+                print("The application may not be fully initialized yet. Try accessing it manually.")
         else:
-            print("❌ Root endpoint check failed")
-            print(f"Response: {root_output if success else 'No response'}")
-            print("The application may not be fully initialized yet. Try accessing it manually.")
+            # For basic and enhanced versions, check for API response
+            if success and "Network Security API is running" in root_output:
+                print("✅ Root endpoint check passed")
+            else:
+                print("❌ Root endpoint check failed")
+                print(f"Response: {root_output if success else 'No response'}")
+                print("The application may not be fully initialized yet. Try accessing it manually.")
 
         # Check if the health endpoint is working
         health_check_command = f'ssh -i "{args.key}" -p {args.port} {args.user}@{args.host} "curl -s http://localhost:8000/health"'
@@ -218,7 +281,16 @@ def main():
         sys.exit(1)
 
     # Print a message about the enhanced features if using the enhanced version
-    if args.enhanced:
+    if args.templates:
+        print("\n=== Templates Features ===")
+        print("The templates version includes:")
+        print("  - Full web interface with multiple pages")
+        print("  - Interactive visualizations (pie charts, bar charts, radar charts)")
+        print("  - Email and text analysis for security threats")
+        print("  - System architecture visualization")
+        print("  - Responsive design with modern UI")
+        print("\nExplore the different pages to see all the features!")
+    elif args.enhanced:
         print("\n=== Enhanced Features ===")
         print("The enhanced version includes:")
         print("  - Interactive pie and bar charts")

@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Email & Text Analysis{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <i class="fas fa-envelope me-2"></i>
+                    Email & Text Analysis
+                </h2>
+                <p class="card-text">
+                    Analyze emails and text content for potential security threats.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Paste Text Content
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="text-analysis-form">
+                    <div class="mb-3">
+                        <label for="text-content" class="form-label">Email or Text Content</label>
+                        <textarea class="form-control" id="text-content" name="text_content" rows="10" placeholder="Paste email or text content here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Content
+                    </button>
+                </form>
+                
+                <div id="loading" class="text-center mt-3 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing content...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Sample Content
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Use one of these sample emails to test the analysis:</p>
+                <div class="list-group">
+                    <button id="sample-phishing" class="list-group-item list-group-item-action">
+                        <i class="fas fa-fish text-danger me-2"></i>
+                        Sample Phishing Email
+                    </button>
+                    <button id="sample-malware" class="list-group-item list-group-item-action">
+                        <i class="fas fa-bug text-danger me-2"></i>
+                        Sample Malware Email
+                    </button>
+                    <button id="sample-safe" class="list-group-item list-group-item-action">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Sample Safe Email
+                    </button>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    The analysis uses keyword detection to identify potential threats in the text content.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="results-container" class="d-none">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Analysis Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="threat-alert" class="alert">
+                                <!-- Will be filled dynamically -->
+                            </div>
+                            
+                            <h6>Analysis Summary</h6>
+                            <div id="analysis-summary" class="mb-3">
+                                <!-- Will be filled dynamically -->
+                            </div>
+                            
+                            <h6>Detected Threats</h6>
+                            <ul class="list-group mb-3" id="detected-threats">
+                                <!-- Will be filled dynamically -->
+                            </ul>
+                            
+                            <h6>Recommendations</h6>
+                            <ul class="list-group mb-3" id="recommendations">
+                                <!-- Will be filled dynamically -->
+                            </ul>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Threat Score</h6>
+                                    <div class="display-4 mb-2" id="threat-score">0</div>
+                                    <div class="progress">
+                                        <div id="threat-score-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="text-muted mt-2" id="threat-level-text">Safe</div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Threat Categories</h6>
+                                    <canvas id="threat-categories-chart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-end">
+                                <button id="print-report" class="btn btn-outline-secondary">
+                                    <i class="fas fa-print me-2"></i>
+                                    Print Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const textAnalysisForm = document.getElementById('text-analysis-form');
+        const samplePhishingBtn = document.getElementById('sample-phishing');
+        const sampleMalwareBtn = document.getElementById('sample-malware');
+        const sampleSafeBtn = document.getElementById('sample-safe');
+        const loadingIndicator = document.getElementById('loading');
+        const resultsContainer = document.getElementById('results-container');
+        const printReportBtn = document.getElementById('print-report');
+        
+        // Handle form submission
+        textAnalysisForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const textContent = document.getElementById('text-content').value.trim();
+            
+            if (!textContent) {
+                alert('Please enter some text content to analyze.');
+                return;
+            }
+            
+            // Show loading indicator
+            loadingIndicator.classList.remove('d-none');
+            resultsContainer.classList.add('d-none');
+            
+            try {
+                // Send request to API
+                const response = await fetch('/analyze-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text_content: textContent
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading indicator
+                loadingIndicator.classList.add('d-none');
+                
+                // Display results
+                displayResults(data.analysis);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingIndicator.classList.add('d-none');
+                alert('An error occurred while analyzing the text. Please try again.');
+            }
+        });
+        
+        // Handle sample phishing button
+        samplePhishingBtn.addEventListener('click', function() {
+            document.getElementById('text-content').value = `From: security@bankofamerica-secure.com
+To: customer@example.com
+Subject: URGENT: Your Bank of America account has been suspended
+
+Dear Valued Customer,
+
+We have detected unusual activity on your Bank of America account. Your account has been temporarily suspended for security reasons.
+
+To restore your account access, please click the link below and verify your information:
+https://bankofamerica-secure.verify-now.com/login
+
+This is an urgent matter that requires your immediate action. Failure to verify your information within 24 hours will result in permanent account suspension.
+
+Sincerely,
+Bank of America Security Team`;
+        });
+        
+        // Handle sample malware button
+        sampleMalwareBtn.addEventListener('click', function() {
+            document.getElementById('text-content').value = `From: invoice@shipping-delivery.com
+To: recipient@example.com
+Subject: Your package delivery invoice #INV-29581
+
+Hello,
+
+Your package is ready for delivery. Please find the invoice attached.
+
+To schedule your delivery, please download and open the attached invoice: invoice_29581.doc
+
+If you have any questions about your delivery, please call our customer service at +1-555-123-4567.
+
+Thank you for your business.
+
+Shipping & Delivery Services`;
+        });
+        
+        // Handle sample safe button
+        sampleSafeBtn.addEventListener('click', function() {
+            document.getElementById('text-content').value = `From: newsletter@company.com
+To: subscriber@example.com
+Subject: Your Weekly Company Newsletter - May 14, 2025
+
+Hello Subscriber,
+
+Here's your weekly newsletter from Company Inc.
+
+# This Week's Highlights
+- New product launch: Widget Pro 2025
+- Company picnic scheduled for June 15
+- Employee of the month: Jane Smith
+
+# Upcoming Events
+- Quarterly meeting: May 20, 2025
+- Training session: May 22, 2025
+
+If you have any questions, please contact us at support@company.com or call 555-123-4567.
+
+Best regards,
+The Company Team`;
+        });
+        
+        // Handle print report button
+        printReportBtn.addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Function to display results
+        function displayResults(analysis) {
+            // Show results container
+            resultsContainer.classList.remove('d-none');
+            
+            // Set threat score
+            const threatScore = analysis.threat_score;
+            document.getElementById('threat-score').textContent = threatScore;
+            
+            // Update threat score bar
+            const threatScoreBar = document.getElementById('threat-score-bar');
+            threatScoreBar.style.width = `${threatScore}%`;
+            
+            // Set threat level color and text
+            let threatLevelText, alertClass, barClass;
+            if (threatScore < 20) {
+                threatLevelText = 'Safe';
+                alertClass = 'alert-success';
+                barClass = 'bg-success';
+            } else if (threatScore < 40) {
+                threatLevelText = 'Low Risk';
+                alertClass = 'alert-info';
+                barClass = 'bg-info';
+            } else if (threatScore < 60) {
+                threatLevelText = 'Medium Risk';
+                alertClass = 'alert-warning';
+                barClass = 'bg-warning';
+            } else if (threatScore < 80) {
+                threatLevelText = 'High Risk';
+                alertClass = 'alert-danger';
+                barClass = 'bg-danger';
+            } else {
+                threatLevelText = 'Critical Risk';
+                alertClass = 'alert-danger';
+                barClass = 'bg-danger';
+            }
+            
+            document.getElementById('threat-level-text').textContent = threatLevelText;
+            threatScoreBar.className = `progress-bar ${barClass}`;
+            
+            // Set threat alert
+            const threatAlert = document.getElementById('threat-alert');
+            threatAlert.className = `alert ${alertClass}`;
+            threatAlert.innerHTML = `
+                <i class="fas fa-${threatScore >= 60 ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                <strong>Threat Level: ${threatLevelText}</strong> - ${analysis.summary}
+            `;
+            
+            // Set analysis summary
+            document.getElementById('analysis-summary').innerHTML = `
+                <div class="alert alert-light">
+                    ${analysis.detailed_summary}
+                </div>
+            `;
+            
+            // Set detected threats
+            const threatsContainer = document.getElementById('detected-threats');
+            threatsContainer.innerHTML = '';
+            
+            if (analysis.threats.length === 0) {
+                threatsContainer.innerHTML = `
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        No specific threats detected
+                    </li>
+                `;
+            } else {
+                analysis.threats.forEach(threat => {
+                    threatsContainer.innerHTML += `
+                        <li class="list-group-item">
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                            <strong>${threat.type}:</strong> ${threat.description}
+                        </li>
+                    `;
+                });
+            }
+            
+            // Set recommendations
+            const recommendationsContainer = document.getElementById('recommendations');
+            recommendationsContainer.innerHTML = '';
+            
+            analysis.recommendations.forEach(recommendation => {
+                recommendationsContainer.innerHTML += `
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        ${recommendation}
+                    </li>
+                `;
+            });
+            
+            // Create threat categories chart
+            const categories = analysis.threat_categories;
+            const categoryLabels = Object.keys(categories);
+            const categoryValues = Object.values(categories);
+            
+            const ctx = document.getElementById('threat-categories-chart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.threatCategoriesChart) {
+                window.threatCategoriesChart.destroy();
+            }
+            
+            window.threatCategoriesChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Threat Level',
+                        data: categoryValues,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        pointBackgroundColor: 'rgb(255, 99, 132)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(255, 99, 132)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

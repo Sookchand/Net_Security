@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 @dataclass
 class DataIngestionArtifact:
@@ -13,21 +14,30 @@ class DataValidationArtifact:
     invalid_train_file_path: str
     invalid_test_file_path: str
     drift_report_file_path: str
-    
+
 @dataclass
 class DataTransformationArtifact:
     transformed_object_file_path: str
     transformed_train_file_path: str
     transformed_test_file_path: str
-    
+
 @dataclass
 class ClassificationMetricArtifact:
     f1_score: float
     precision_score: float
     recall_score: float
-    
-@dataclass  
+
+@dataclass
 class ModelTrainerArtifact:
     trained_model_file_path: str
     trained_metric_artifact:ClassificationMetricArtifact
     test_metric_artifact: ClassificationMetricArtifact
+
+@dataclass
+class ModelDriftArtifact:
+    drift_detected: bool
+    drift_report_file_path: str
+    drift_text_report_file_path: str
+    visualization_dir: str
+    visualization_paths: List[str]
+    message: str
