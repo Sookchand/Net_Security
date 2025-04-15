@@ -34,7 +34,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          # Extract hostname without port if it contains a colon
+          EC2_HOSTNAME=$(echo "${{ secrets.EC2_HOST }}" | cut -d: -f1)
+          echo "Using hostname: $EC2_HOSTNAME for SSH keyscan"
+          ssh-keyscan -H "$EC2_HOSTNAME" >> ~/.ssh/known_hosts
 
       - name: Deploy to EC2
         run: |
@@ -44,22 +47,22 @@ jobs:
         run: |
           # Wait for the application to start
           sleep 10
-          
+
           # Test the root endpoint
           ROOT_RESPONSE=$(curl -s http://${{ secrets.EC2_HOST }}:8000/)
           echo "Root endpoint response: $ROOT_RESPONSE"
-          
+
           if [[ "$ROOT_RESPONSE" == *"Network Security API is running"* ]]; then
             echo "✅ Root endpoint check passed"
           else
             echo "❌ Root endpoint check failed"
             exit 1
           fi
-          
+
           # Test the health endpoint
           HEALTH_RESPONSE=$(curl -s http://${{ secrets.EC2_HOST }}:8000/health)
           echo "Health endpoint response: $HEALTH_RESPONSE"
-          
+
           if [[ "$HEALTH_RESPONSE" == *"healthy"* ]]; then
             echo "✅ Health endpoint check passed"
           else

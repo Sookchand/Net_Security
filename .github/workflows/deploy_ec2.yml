@@ -23,7 +23,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          # Extract hostname without port if it contains a colon
+          EC2_HOSTNAME=$(echo "${{ secrets.EC2_HOST }}" | cut -d: -f1)
+          echo "Using hostname: $EC2_HOSTNAME for SSH keyscan"
+          ssh-keyscan -H "$EC2_HOSTNAME" >> ~/.ssh/known_hosts
 
       - name: Upload files to EC2
         run: |
@@ -44,7 +47,7 @@ jobs:
         run: |
           CONTAINER_STATUS=$(ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "docker ps | grep netwroksecuritytrial || echo 'Container not running'")
           echo "Container status: $CONTAINER_STATUS"
-          
+
           if [[ "$CONTAINER_STATUS" == *"Container not running"* ]]; then
             echo "❌ Container is not running"
             echo "Checking container logs:"
@@ -58,7 +61,7 @@ jobs:
         run: |
           ROOT_RESPONSE=$(ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "curl -s http://localhost:8000/ || echo 'Failed to connect'")
           echo "Root endpoint response: $ROOT_RESPONSE"
-          
+
           if [[ "$ROOT_RESPONSE" == *"Network Security API is running"* ]]; then
             echo "✅ Root endpoint check passed"
           else
@@ -72,7 +75,7 @@ jobs:
         run: |
           HEALTH_RESPONSE=$(ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_HOST }} "curl -s http://localhost:8000/health || echo 'Failed to connect'")
           echo "Health endpoint response: $HEALTH_RESPONSE"
-          
+
           if [[ "$HEALTH_RESPONSE" == *"healthy"* ]]; then
             echo "✅ Health endpoint check passed"
           else
