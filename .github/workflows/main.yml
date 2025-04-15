@@ -130,26 +130,72 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Wait for application to start
-        run: sleep 10
+        run: |
+          echo "Waiting for application to start..."
+          sleep 30  # Increased wait time to ensure application is fully started
 
       - name: Test application health endpoint
         run: |
-          response=$(curl -s http://localhost:8000/health)
-          echo "Response: $response"
-          if [[ "$response" == *"healthy"* ]]; then
-            echo "✅ Application is healthy"
-          else
-            echo "❌ Application health check failed"
+          # Try multiple times in case the application is still starting up
+          max_attempts=5
+          attempt=1
+          success=false
+
+          while [ $attempt -le $max_attempts ] && [ "$success" = false ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            response=$(curl -s --connect-timeout 5 http://localhost:8000/health || echo "Connection failed")
+            echo "Response: $response"
+
+            if [[ "$response" == *"healthy"* ]]; then
+              echo "✅ Application is healthy"
+              success=true
+              break
+            else
+              echo "⚠️ Health check not successful yet"
+              if [ $attempt -lt $max_attempts ]; then
+                echo "Waiting 5 seconds before next attempt..."
+                sleep 5
+              fi
+              attempt=$((attempt+1))
+            fi
+          done
+
+          if [ "$success" = false ]; then
+            echo "❌ Application health check failed after $max_attempts attempts"
+            echo "Checking container logs:"
+            docker logs netwroksecuritytrial
             exit 1
           fi
 
       - name: Test application root endpoint
         run: |
-          response=$(curl -s http://localhost:8000/)
-          echo "Response: $response"
-          if [[ "$response" == *"Network Security API is running"* ]]; then
-            echo "✅ Application root endpoint is working"
-          else
-            echo "❌ Application root endpoint check failed"
+          # Try multiple times in case the application is still starting up
+          max_attempts=5
+          attempt=1
+          success=false
+
+          while [ $attempt -le $max_attempts ] && [ "$success" = false ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            response=$(curl -s --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
+            echo "Response: $response"
+
+            if [[ "$response" == *"Network Security API is running"* ]]; then
+              echo "✅ Application root endpoint is working"
+              success=true
+              break
+            else
+              echo "⚠️ Root endpoint check not successful yet"
+              if [ $attempt -lt $max_attempts ]; then
+                echo "Waiting 5 seconds before next attempt..."
+                sleep 5
+              fi
+              attempt=$((attempt+1))
+            fi
+          done
+
+          if [ "$success" = false ]; then
+            echo "❌ Application root endpoint check failed after $max_attempts attempts"
+            echo "Checking container logs:"
+            docker logs netwroksecuritytrial
             exit 1
           fi
