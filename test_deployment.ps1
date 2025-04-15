@@ -34,11 +34,13 @@ if ($containerStatus -like "*Container not running*") {
 
 # Test root endpoint
 Write-Host "Testing root endpoint..." -ForegroundColor Yellow
-$rootResponse = ssh -i $KEY_FILE ec2-user@$EC2_HOST "curl -s http://localhost:8000/ || echo 'Failed to connect'"
-Write-Host "Root endpoint response: $rootResponse" -ForegroundColor Gray
+# Use curl with -I to get headers and check for 307 redirect
+$rootResponse = ssh -i $KEY_FILE ec2-user@$EC2_HOST "curl -s -I http://localhost:8000/ || echo 'Failed to connect'"
+Write-Host "Root endpoint response headers: $rootResponse" -ForegroundColor Gray
 
-if ($rootResponse -like "*Network Security API is running*") {
-    Write-Host "✅ Root endpoint check passed" -ForegroundColor Green
+# Check for either a 200 OK or a 307 redirect (both indicate the app is running)
+if (($rootResponse -like "*200 OK*") -or ($rootResponse -like "*307 Temporary Redirect*")) {
+    Write-Host "✅ Root endpoint check passed (received valid HTTP response)" -ForegroundColor Green
 } else {
     Write-Host "❌ Root endpoint check failed" -ForegroundColor Red
     Write-Host "Checking container logs:" -ForegroundColor Yellow

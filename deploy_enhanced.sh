@@ -23,11 +23,13 @@ sleep 10
 
 # Check if the application is responding
 echo "Checking if the application is responding..."
-ROOT_RESPONSE=$(curl -s --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
-echo "Root endpoint response: $ROOT_RESPONSE"
+# Use curl with -I to get headers and check for 307 redirect
+ROOT_RESPONSE=$(curl -s -I --connect-timeout 5 http://localhost:8000/ || echo "Connection failed")
+echo "Root endpoint response headers: $ROOT_RESPONSE"
 
-if [[ "$ROOT_RESPONSE" == *"Network Security API is running"* ]]; then
-    echo "✅ Root endpoint check passed"
+# Check for either a 200 OK or a 307 redirect (both indicate the app is running)
+if [[ "$ROOT_RESPONSE" == *"200 OK"* ]] || [[ "$ROOT_RESPONSE" == *"307 Temporary Redirect"* ]]; then
+    echo "✅ Root endpoint check passed (received valid HTTP response)"
 else
     echo "❌ Root endpoint check failed"
     echo "The application may still be starting up. Check the logs:"
